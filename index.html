@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="paper">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Generalized ARQ Protocol Simulator — DLL Flow Control</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Custom Theme & Layout Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="font-sans antialiased lg:h-screen lg:max-h-screen lg:overflow-hidden flex flex-col select-none">
+
+  <!-- =========================================================================
+       COMPACT TOP HEADER (48px fixed height on desktop)
+       ========================================================================= -->
+  <header class="theme-panel border-b h-[48px] shrink-0 px-3 flex items-center justify-between gap-2 z-20">
+    <!-- Left: Brand Title -->
+    <div class="flex items-center gap-2.5 min-w-0">
+      <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-sm shrink-0" style="background: var(--accent-primary);">
+        <i class="fa-solid fa-layer-group"></i>
+      </div>
+      <div class="flex items-center gap-2 truncate">
+        <h1 class="text-sm font-extrabold tracking-tight theme-text-main truncate">Generalized ARQ Protocol Simulator</h1>
+        <span class="hidden sm:inline-block text-[10px] font-mono font-semibold px-2 py-0.5 rounded-md border" style="background: var(--accent-primary-soft); color: var(--accent-primary); border-color: var(--accent-primary);">
+          DLL Flow Control
+        </span>
+      </div>
+    </div>
+
+    <!-- Right: Theme Switcher & 3-Protocol Comparison Modal Trigger -->
+    <div class="flex items-center gap-2 shrink-0">
+      <!-- Theme Selector Pills -->
+      <div class="flex items-center gap-1 theme-subtle border rounded-lg p-0.5 text-[11px] font-medium">
+        <span class="px-1.5 theme-text-muted hidden md:inline"><i class="fa-solid fa-palette mr-1"></i>Theme:</span>
+        <button data-set-theme="paper" class="theme-btn px-2.5 py-1 rounded-md transition font-semibold">Paper</button>
+        <button data-set-theme="obsidian" class="theme-btn px-2.5 py-1 rounded-md transition">Obsidian</button>
+      </div>
+
+      <!-- Compare All 3 Protocols Button -->
+      <button id="btnRunComparison" class="px-2.5 py-1.5 rounded-lg text-xs font-bold text-white transition flex items-center gap-1.5 shadow-sm hover:opacity-90" style="background: var(--accent-primary);">
+        <i class="fa-solid fa-scale-balanced"></i>
+        <span>Compare All 3 Protocols</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       3-COLUMN ZERO-OVERFLOW MAIN WORKSPACE (calc(100vh - 48px))
+       ========================================================================= -->
+  <main class="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-12 gap-2 p-2 lg:overflow-hidden">
+
+    <!-- =======================================================================
+         LEFT COLUMN (3 Cols): PROPORTIONAL PARAMETERS, FAULTS & TEST CASES
+         ======================================================================= -->
+    <aside class="lg:col-span-3 flex flex-col gap-2 min-h-0 h-full lg:overflow-y-auto pr-0.5">
+
+      <!-- Card 1: Protocol & Window Parameters -->
+      <div class="theme-panel border rounded-xl p-3 shadow-sm flex flex-col gap-2.5 shrink-0">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-extrabold uppercase tracking-wider theme-text-muted flex items-center gap-1.5">
+            <i class="fa-solid fa-sliders" style="color: var(--accent-primary);"></i>
+            1. Protocol & Parameters
+          </span>
+          <span id="protocolFormulaBadge" class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded theme-subtle border theme-text-sec">
+            Ws &le; 2^m - 1
+          </span>
+        </div>
+
+        <!-- 3 Protocol Selector Buttons -->
+        <div class="grid grid-cols-3 gap-1 p-1 rounded-lg theme-subtle border">
+          <button data-protocol="SW" class="protocol-btn py-1.5 px-1 rounded-md text-[11px] font-bold transition text-center">
+            Stop & Wait
+          </button>
+          <button data-protocol="GBN" class="protocol-btn py-1.5 px-1 rounded-md text-[11px] font-bold transition text-center">
+            Go-Back-N
+          </button>
+          <button data-protocol="SR" class="protocol-btn py-1.5 px-1 rounded-md text-[11px] font-bold transition text-center">
+            Selective Rpt
+          </button>
+        </div>
+
+        <!-- Sliders for Total Frames (N) and Sequence Bits (m) -->
+        <div class="grid grid-cols-2 gap-2">
+          <div class="theme-subtle border rounded-lg p-2 flex flex-col justify-between">
+            <div class="flex justify-between items-center text-[11px] mb-1.5">
+              <span class="font-semibold theme-text-sec">Frames (N)</span>
+              <span id="labelTotalFrames" class="font-mono font-bold theme-text-main">10</span>
+            </div>
+            <input id="inputTotalFrames" type="range" min="4" max="16" value="10" class="w-full h-1.5 cursor-pointer" />
+          </div>
+
+          <div class="theme-subtle border rounded-lg p-2 flex flex-col justify-between">
+            <div class="flex justify-between items-center text-[11px] mb-1.5">
+              <span class="font-semibold theme-text-sec">Seq Bits (m)</span>
+              <span id="labelSeqSpace" class="font-mono font-bold theme-text-main">3b (0..7)</span>
+            </div>
+            <input id="inputSeqBits" type="range" min="1" max="4" value="3" class="w-full h-1.5 cursor-pointer" />
+          </div>
+        </div>
+
+        <!-- Sender Window (Ws) & Receiver Window (Wr) -->
+        <div class="grid grid-cols-2 gap-2">
+          <div class="theme-subtle border rounded-lg px-2.5 py-1.5 flex items-center justify-between">
+            <div>
+              <div class="text-[11px] font-bold theme-text-sec">Sender W<sub>s</sub></div>
+              <div id="badgeWsLimit" class="text-[9px] font-mono theme-text-muted">max: 7</div>
+            </div>
+            <input id="inputWs" type="number" min="1" max="16" value="4" class="w-12 h-7 text-center font-mono text-xs font-bold rounded border px-1 theme-panel theme-text-main disabled:opacity-40" />
+          </div>
+
+          <div class="theme-subtle border rounded-lg px-2.5 py-1.5 flex items-center justify-between">
+            <div>
+              <div class="text-[11px] font-bold theme-text-sec">Receiver W<sub>r</sub></div>
+              <div id="badgeWrLimit" class="text-[9px] font-mono theme-text-muted">locked: 1</div>
+            </div>
+            <input id="inputWr" type="number" min="1" max="16" value="1" disabled class="w-12 h-7 text-center font-mono text-xs font-bold rounded border px-1 theme-panel theme-text-main disabled:opacity-40" />
+          </div>
+        </div>
+
+        <!-- Compact Constraint Validator Banner -->
+        <div id="validationAlert" class="rounded-lg px-2.5 py-1.5 border text-[10px] leading-tight flex items-center gap-1.5">
+          <i id="validationIcon" class="fa-solid fa-circle-check shrink-0"></i>
+          <div class="min-w-0 truncate">
+            <span id="validationTitle" class="font-bold mr-1">Valid Configuration:</span>
+            <span id="validationDesc" class="opacity-90">Ws (4) &le; 2^3 - 1 (7), Wr = 1.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Channel Error Injection (Proportional Full-Width Grid) -->
+      <div class="theme-panel border rounded-xl p-3 shadow-sm flex flex-col gap-2.5 shrink-0">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-extrabold uppercase tracking-wider theme-text-muted flex items-center gap-1.5">
+            <i class="fa-solid fa-bolt" style="color: var(--danger-accent);"></i>
+            2. Channel Faults (1st Tx)
+          </span>
+          <button id="btnClearErrors" class="text-[10px] font-bold px-2 py-0.5 rounded border transition hover:opacity-80" style="color: var(--danger-accent); border-color: var(--danger-accent); background: var(--danger-soft);">
+            Clear Faults
+          </button>
+        </div>
+
+        <!-- Lost Data Frames -->
+        <div class="theme-subtle border rounded-lg p-2 space-y-1.5">
+          <div class="flex items-center justify-between gap-2 text-[10px]">
+            <span class="font-bold theme-text-sec shrink-0">Frames Lost:</span>
+            <input id="inputLostFrames" type="text" value="3, 7" placeholder="None (click pills)" class="w-36 theme-panel border rounded px-2 py-0.5 text-[10px] font-mono font-bold text-right focus:outline-none" style="color: var(--danger-accent);" />
+          </div>
+          <div id="frameFaultPills" class="grid grid-cols-8 gap-1"></div>
+        </div>
+
+        <!-- Lost ACKs -->
+        <div class="theme-subtle border rounded-lg p-2 space-y-1.5">
+          <div class="flex items-center justify-between gap-2 text-[10px]">
+            <span class="font-bold theme-text-sec shrink-0">ACKs Lost:</span>
+            <input id="inputLostAcks" type="text" value="5" placeholder="None (click pills)" class="w-36 theme-panel border rounded px-2 py-0.5 text-[10px] font-mono font-bold text-right focus:outline-none" style="color: var(--warn-accent);" />
+          </div>
+          <div id="ackFaultPills" class="grid grid-cols-8 gap-1"></div>
+        </div>
+      </div>
+
+      <!-- Card 3: Proportional 2-Column Stretched Grid for Lab Sheet Test Cases (TC 1–7) -->
+      <div class="theme-panel border rounded-xl p-3 shadow-sm flex-1 flex flex-col gap-2 min-h-[210px]">
+        <div class="flex items-center justify-between shrink-0">
+          <span class="text-[11px] font-extrabold uppercase tracking-wider theme-text-muted flex items-center gap-1.5">
+            <i class="fa-solid fa-flask" style="color: var(--accent-primary);"></i>
+            3. Lab Test Cases (1–7)
+          </span>
+          <span class="text-[9px] font-mono px-1.5 py-0.5 rounded theme-subtle border theme-text-muted">1-Click Presets</span>
+        </div>
+
+        <div class="grid grid-cols-2 grid-rows-4 gap-1.5 flex-1 min-h-0">
+          <button data-tc="1" class="tc-btn h-full text-left px-2.5 py-1.5 rounded-lg theme-subtle border hover:opacity-90 transition flex flex-col justify-center">
+            <div class="text-[11px] font-bold theme-text-main flex items-center justify-between">
+              <span>TC 1: No Loss</span>
+              <i class="fa-solid fa-check text-[9px] opacity-50"></i>
+            </div>
+            <div class="text-[9.5px] theme-text-muted truncate">Ideal error-free channel</div>
+          </button>
+
+          <button data-tc="2" class="tc-btn h-full text-left px-2.5 py-1.5 rounded-lg theme-subtle border hover:opacity-90 transition flex flex-col justify-center">
+            <div class="text-[11px] font-bold theme-text-main flex items-center justify-between">
+              <span>TC 2: 1 Frame Lost</span>
+              <span class="text-[9px] font-mono" style="color: var(--danger-accent);">F3</span>
+            </div>
+            <div class="text-[9.5px] theme-text-muted truncate">Single data frame drop</div>
+          </button>
+
+          <button data-tc="3" class="tc-btn h-full text-left px-2.5 py-1.5 rounded-lg theme-subtle border hover:opacity-90 transition flex flex-col justify-center">
+            <div class="text-[11px] font-bold theme-text-main flex items-center justify-between">
+              <span>TC 3: 1 ACK Lost</span>
+              <span class="text-[9px] font-mono" style="color: var(--warn-accent);">A2</span>
+            </div>
+            <div class="text-[9.5px] theme-text-muted truncate">ACK 2 dropped on return</div>
+          </button>
+
+          <button data-tc="4" class="tc-btn h-full text-left px-2.5 py-1.5 rounded-lg theme-subtle border hover:opacity-90 transition flex flex-col justify-center">
+            <div class="text-[11px] font-bold theme-text-main flex items-center justify-between">
+              <span>TC 4: Burst Loss</span>
+              <span class="text-[9px] font-mono" style="color: var(--danger-accent);">F2-F4</span>
+            </div>
+            <div class="text-[9.5px] theme-text-muted truncate">3 consecutive frames lost</div>
+          </button>
+
+          <button data-tc="5" class="tc-btn h-full text-left px-2.5 py-1.5 rounded-lg theme-subtle border hover:opacity-90 transition flex flex-col justify-center">
+            <div class="text-[11px] font-bold theme-text-main flex items-center justify-between">
+              <span>TC 5: Large Ws=6</span>
+              <span class="text-[9px] font-mono" style="color: var(--sender-accent);">m=4</span>
+            </div>
+            <div class="text-[9.5px] theme-text-muted truncate">GBN vs SR wide window</div>
+          </button>
+
+          <button data-tc="6" class="tc-btn h-full text-left px-2.5 py-1.5 rounded-lg theme-subtle border hover:opacity-90 transition flex flex-col justify-center">
+            <div class="text-[11px] font-bold theme-text-main flex items-center justify-between">
+              <span>TC 6: m=2 Bits</span>
+              <span class="text-[9px] font-mono" style="color: var(--receiver-accent);">0..3</span>
+            </div>
+            <div class="text-[9.5px] theme-text-muted truncate">Tight modulo-4 wrap</div>
+          </button>
+
+          <button data-tc="7" class="tc-btn col-span-2 h-full text-left px-3 py-1.5 rounded-lg border transition flex items-center justify-between hover:opacity-90" style="background: var(--danger-soft); border-color: var(--danger-accent);">
+            <div>
+              <div class="text-[11px] font-bold" style="color: var(--danger-accent);">TC 7: Invalid Config (SR Ws &gt; 2<sup>m-1</sup>)</div>
+              <div class="text-[9.5px] theme-text-sec">Tests m=3, Ws=6 on SR (exceeds max safe window 4)</div>
+            </div>
+            <i class="fa-solid fa-triangle-exclamation text-sm" style="color: var(--danger-accent);"></i>
+          </button>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- =======================================================================
+         CENTER SIMULATION STAGE (6 Cols)
+         ======================================================================= -->
+    <section class="lg:col-span-6 flex flex-col gap-2 min-h-0 h-full overflow-hidden">
+
+      <!-- ROW 1: UNIFIED PLAYBACK CONTROLS, SCRUBBER & VIEW SWITCHER (shrink-0) -->
+      <div class="theme-panel border rounded-xl px-3 py-2 shadow-sm shrink-0 flex flex-col gap-1.5">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <!-- Playback Buttons -->
+          <div class="flex items-center gap-1">
+            <button id="btnPlayPause" class="px-3 py-1 rounded-lg text-xs font-bold text-white transition flex items-center gap-1.5 shadow-sm" style="background: var(--accent-primary);">
+              <i id="iconPlayPause" class="fa-solid fa-play text-[10px]"></i>
+              <span id="textPlayPause">Play</span>
+            </button>
+            <button id="btnStepBack" title="Step Back 1 Tick" class="px-2 py-1 rounded-lg text-xs font-semibold theme-subtle border hover:opacity-80 transition">
+              <i class="fa-solid fa-backward-step"></i>
+            </button>
+            <button id="btnStepForward" title="Step Forward 1 Tick" class="px-2.5 py-1 rounded-lg text-xs font-semibold theme-subtle border hover:opacity-80 transition flex items-center gap-1">
+              <i class="fa-solid fa-forward-step"></i>
+              <span>+1 Tick</span>
+            </button>
+            <button id="btnJumpEnd" title="Jump to End" class="px-2 py-1 rounded-lg text-xs font-semibold theme-subtle border hover:opacity-80 transition">
+              <i class="fa-solid fa-forward-fast"></i>
+            </button>
+            <button id="btnResetSim" title="Reset to Tick 0" class="px-2 py-1 rounded-lg text-xs font-semibold theme-subtle border hover:opacity-80 transition">
+              <i class="fa-solid fa-rotate-right"></i>
+            </button>
+
+            <select id="selectSpeed" class="ml-1 theme-subtle border rounded-lg px-1.5 py-1 text-[11px] font-mono font-semibold focus:outline-none">
+              <option value="0.45">0.5x</option>
+              <option value="0.9" selected>1.0x</option>
+              <option value="1.8">2.0x</option>
+              <option value="3.6">4.0x</option>
+            </select>
+          </div>
+
+          <!-- Stage View Toggle (Live Channel | Split Both | Live Ladder) -->
+          <div class="flex items-center gap-1 p-0.5 rounded-lg theme-subtle border">
+            <button data-view="channel" class="stage-tab-btn px-2 py-1 rounded-md text-[10.5px] font-bold transition flex items-center gap-1">
+              <i class="fa-solid fa-satellite-dish text-[10px]"></i>
+              <span>Channel</span>
+            </button>
+            <button data-view="split" class="stage-tab-btn px-2 py-1 rounded-md text-[10.5px] font-bold transition flex items-center gap-1">
+              <i class="fa-solid fa-table-columns text-[10px]"></i>
+              <span>Split Live</span>
+            </button>
+            <button data-view="ladder" class="stage-tab-btn px-2 py-1 rounded-md text-[10.5px] font-bold transition flex items-center gap-1">
+              <i class="fa-solid fa-diagram-project text-[10px]"></i>
+              <span>Live Ladder</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Scrubber Row + Live Tick Headline -->
+        <div class="flex items-center gap-2.5">
+          <span class="text-[11px] font-mono font-bold shrink-0 w-16">
+            t = <span id="scrubberTickLabel" style="color: var(--accent-primary);">0</span><span id="scrubberMaxLabel" class="theme-text-muted text-[10px]">/0</span>
+          </span>
+          <input id="timelineScrubber" type="range" min="0" max="50" step="0.05" value="0" class="w-36 sm:w-44 h-1.5 cursor-pointer shrink-0" />
+          <div id="liveTickHeadline" class="flex-1 text-[11px] font-mono truncate px-2 py-0.5 rounded theme-subtle border theme-text-sec">
+            Ready at Tick 0
+          </div>
+        </div>
+      </div>
+
+      <!-- ROW 2: SENDER NODE & SLIDING WINDOW TAPE (shrink-0) -->
+      <div class="theme-panel border rounded-xl px-3 py-2 shadow-sm shrink-0">
+        <div class="flex flex-wrap items-center justify-between gap-1 mb-1.5">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-extrabold uppercase" style="background: var(--sender-soft); color: var(--sender-accent);">
+              SENDER WINDOW
+            </span>
+            <span id="senderWindowText" class="text-[11px] font-mono theme-text-sec">
+              [base=0 .. next=0]
+            </span>
+          </div>
+          <span id="senderTimerSummary" class="text-[10px] font-mono font-semibold" style="color: var(--warn-accent);">
+            No active timer
+          </span>
+        </div>
+
+        <div class="overflow-x-auto pb-0.5">
+          <div id="senderTapeContainer" class="inline-flex items-center gap-1.5 min-w-full pt-1.5 pb-0.5 px-0.5">
+            <!-- Dynamically populated compact frame cards -->
+          </div>
+        </div>
+      </div>
+
+      <!-- ROW 3: FLEX-1 DYNAMIC SIMULATION STAGE (CHANNEL CANVAS, LIVE LADDER OR SPLIT) -->
+      <div class="theme-canvas-wrap border rounded-xl shadow-inner flex-1 min-h-[160px] relative overflow-hidden flex flex-col">
+        <!-- Floating Legend Bar inside Canvas Top -->
+        <div class="px-3 py-1.5 border-b flex flex-wrap items-center justify-between gap-2 text-[10px] font-mono z-10 theme-panel shrink-0" style="border-color: var(--border-subtle);">
+          <span class="font-bold uppercase tracking-wider theme-text-muted" id="stageSubHeaderTitle">
+            Live Channel &amp; Space-Time Propagation (RTT = 6t | RTO = 9t)
+          </span>
+          <div class="flex items-center gap-2.5">
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full inline-block" style="background: var(--sender-accent);"></span>Data &darr;</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full inline-block" style="background: var(--ack-accent);"></span>ACK &uarr;</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full inline-block" style="background: var(--warn-accent);"></span>Re-Tx</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full inline-block" style="background: var(--receiver-accent);"></span>Buffered</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full inline-block" style="background: var(--danger-accent);"></span>Lost &times;</span>
+          </div>
+        </div>
+
+        <!-- Stage Body Grid (Supports Single or Split View) -->
+        <div id="stageBodyWrapper" class="flex-1 min-h-0 grid grid-cols-1 w-full h-full overflow-hidden">
+          <!-- View 1: Live Animated HTML5 Canvas -->
+          <div id="viewChannelStage" class="relative w-full h-full min-h-0 overflow-hidden">
+            <canvas id="channelCanvas" class="w-full h-full block"></canvas>
+          </div>
+
+          <!-- View 2: Live-Updating Space-Time Ladder Diagram (Scrollable SVG synced with currentTick) -->
+          <div id="viewLadderStage" class="hidden relative w-full h-full min-h-0 overflow-y-auto p-2 border-l" style="border-color: var(--border-subtle);">
+            <div id="ladderSvgContainer" class="w-full"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROW 4: RECEIVER NODE & SLIDING WINDOW TAPE (shrink-0, ALWAYS VISIBLE AT BOTTOM) -->
+      <div class="theme-panel border rounded-xl px-3 py-2 shadow-sm shrink-0">
+        <div class="flex flex-wrap items-center justify-between gap-1 mb-1.5">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-extrabold uppercase" style="background: var(--receiver-soft); color: var(--receiver-accent);">
+              RECEIVER WINDOW
+            </span>
+            <span id="receiverWindowText" class="text-[11px] font-mono theme-text-sec">
+              Expected R_next = 0, Wr = 1
+            </span>
+          </div>
+          <span id="receiverRuleBadge" class="text-[10px] font-mono font-semibold" style="color: var(--receiver-accent);">
+            Out-of-order: Discarded (Cumulative ACK)
+          </span>
+        </div>
+
+        <div class="overflow-x-auto pb-0.5">
+          <div id="receiverTapeContainer" class="inline-flex items-center gap-1.5 min-w-full pt-1.5 pb-0.5 px-0.5">
+            <!-- Dynamically populated compact receiver frame cards -->
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- =======================================================================
+         RIGHT COLUMN (3 Cols): COLOR-CODED TRANSMISSION LOG & PERFORMANCE SUMMARY
+         ======================================================================= -->
+    <aside class="lg:col-span-3 flex flex-col gap-2 min-h-0 h-full overflow-hidden">
+
+      <!-- Transmission Log Card (flex-1 min-h-0 so it scrolls internally) -->
+      <div class="theme-panel border rounded-xl shadow-sm flex-1 min-h-0 flex flex-col overflow-hidden">
+        <div class="px-3 py-2 border-b flex items-center justify-between gap-1 shrink-0 theme-subtle">
+          <div class="flex items-center gap-1.5">
+            <i class="fa-solid fa-terminal text-xs" style="color: var(--accent-primary);"></i>
+            <h2 class="text-[11px] font-extrabold uppercase tracking-wider theme-text-main">Transmission Log</h2>
+          </div>
+
+          <div class="flex items-center gap-1">
+            <select id="selectLogFormat" class="theme-panel border rounded px-1.5 py-0.5 text-[10px] font-mono font-semibold focus:outline-none">
+              <option value="live" selected>Sync with Tick</option>
+              <option value="assignment">Full Lab Log</option>
+            </select>
+            <button id="btnCopyLog" class="px-2 py-0.5 rounded text-[10px] font-bold border transition hover:opacity-80" style="background: var(--accent-primary-soft); color: var(--accent-primary); border-color: var(--accent-primary);">
+              <i class="fa-regular fa-copy mr-0.5"></i><span id="copyLogText">Copy</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Operation Color Key Bar -->
+        <div class="px-2.5 py-1 border-b flex flex-wrap items-center gap-1 text-[9px] font-mono font-bold shrink-0 theme-subtle" style="border-color: var(--border-subtle);">
+          <span class="px-1.5 py-0.2 rounded" style="background: rgba(56, 189, 248, 0.16); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4);">TX</span>
+          <span class="px-1.5 py-0.2 rounded" style="background: rgba(16, 185, 129, 0.16); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4);">RX</span>
+          <span class="px-1.5 py-0.2 rounded" style="background: rgba(45, 212, 191, 0.16); color: #2dd4bf; border: 1px solid rgba(45, 212, 191, 0.4);">ACK</span>
+          <span class="px-1.5 py-0.2 rounded" style="background: rgba(192, 132, 252, 0.16); color: #c084fc; border: 1px solid rgba(192, 132, 252, 0.4);">BUF</span>
+          <span class="px-1.5 py-0.2 rounded" style="background: rgba(251, 191, 36, 0.16); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4);">RTO/RE-TX</span>
+          <span class="px-1.5 py-0.2 rounded" style="background: rgba(244, 63, 94, 0.18); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.45);">LOST</span>
+          <span class="px-1.5 py-0.2 rounded" style="background: rgba(244, 114, 182, 0.16); color: #f472b6; border: 1px solid rgba(244, 114, 182, 0.4);">DISC</span>
+        </div>
+
+        <div id="transmissionLogContainer" class="p-2.5 flex-1 min-h-0 overflow-y-auto font-mono text-[11px] space-y-1.5 leading-snug select-text">
+          <!-- Populated dynamically with color-coded operation cards -->
+        </div>
+      </div>
+
+      <!-- Pinned Performance Summary Card (shrink-0, always visible at bottom right) -->
+      <div class="theme-panel border rounded-xl p-2.5 shadow-sm shrink-0 space-y-2">
+        <div class="flex items-center justify-between border-b pb-1" style="border-color: var(--border-subtle);">
+          <span class="text-[11px] font-extrabold uppercase tracking-wider theme-text-main flex items-center gap-1.5">
+            <i class="fa-solid fa-chart-simple" style="color: var(--ack-accent);"></i>
+            Performance Summary
+          </span>
+          <span id="summaryModeTag" class="text-[9px] font-mono theme-text-muted">Live Tick Metrics</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-1.5 font-mono text-xs">
+          <div class="theme-subtle border rounded-lg px-2 py-1.5 flex items-center justify-between">
+            <span class="text-[10px] font-sans font-semibold theme-text-sec">Delivered</span>
+            <span>
+              <strong id="metricDelivered" class="text-sm font-extrabold" style="color: var(--ack-accent);">0</strong>
+              <span id="metricDeliveredTarget" class="text-[10px] theme-text-muted">/10</span>
+            </span>
+          </div>
+
+          <div class="theme-subtle border rounded-lg px-2 py-1.5 flex items-center justify-between">
+            <span class="text-[10px] font-sans font-semibold theme-text-sec">Attempts</span>
+            <strong id="metricAttempts" class="text-sm font-extrabold" style="color: var(--sender-accent);">0</strong>
+          </div>
+
+          <div class="theme-subtle border rounded-lg px-2 py-1.5 flex items-center justify-between">
+            <span class="text-[10px] font-sans font-semibold theme-text-sec">Retransmits</span>
+            <strong id="metricRetransmissions" class="text-sm font-extrabold" style="color: var(--warn-accent);">0</strong>
+          </div>
+
+          <div class="theme-subtle border rounded-lg px-2 py-1.5 flex items-center justify-between">
+            <span class="text-[10px] font-sans font-semibold theme-text-sec">Discarded</span>
+            <strong id="metricDiscarded" class="text-sm font-extrabold" style="color: var(--danger-accent);">0</strong>
+          </div>
+
+          <div class="col-span-2 theme-subtle border rounded-lg px-2.5 py-1.5 flex items-center justify-between">
+            <span class="text-[10px] font-sans font-semibold theme-text-sec">Simulated Transmission Time</span>
+            <span>
+              <strong id="metricSimTime" class="text-sm font-extrabold" style="color: var(--accent-primary);">0</strong>
+              <span id="metricTotalSimTime" class="text-[10px] theme-text-muted">/ 0 ticks</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <!-- =========================================================================
+       MODAL: SIDE-BY-SIDE 3-PROTOCOL COMPARISON TABLE
+       ========================================================================= -->
+  <div id="modalComparison" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="theme-panel border rounded-2xl max-w-4xl w-full max-h-[88vh] flex flex-col shadow-2xl overflow-hidden">
+      <div class="px-5 py-3.5 border-b flex items-center justify-between theme-subtle">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center text-white" style="background: var(--accent-primary);">
+            <i class="fa-solid fa-scale-balanced"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-extrabold theme-text-main">3-Protocol Performance Comparison</h3>
+            <p class="text-xs theme-text-muted">Benchmarks Stop-and-Wait, Go-Back-N, and Selective Repeat on your active parameters</p>
+          </div>
+        </div>
+        <button data-close-modal="modalComparison" class="theme-text-muted hover:opacity-75 p-1.5 rounded-lg">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="p-5 overflow-y-auto space-y-4 text-xs">
+        <div id="comparisonParamsSummary" class="theme-subtle border rounded-xl p-3 font-mono theme-text-sec"></div>
+
+        <div class="overflow-x-auto border rounded-xl" style="border-color: var(--border-main);">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="theme-subtle border-b font-mono text-[11px] uppercase theme-text-muted" style="border-color: var(--border-main);">
+                <th class="py-2.5 px-3">Protocol</th>
+                <th class="py-2.5 px-3">Windows (W<sub>s</sub>, W<sub>r</sub>)</th>
+                <th class="py-2.5 px-3">Delivered</th>
+                <th class="py-2.5 px-3">Total Attempts</th>
+                <th class="py-2.5 px-3">Retransmissions</th>
+                <th class="py-2.5 px-3">Discarded</th>
+                <th class="py-2.5 px-3">Simulated Time</th>
+                <th class="py-2.5 px-3">Efficiency</th>
+              </tr>
+            </thead>
+            <tbody id="comparisonTableBody" class="divide-y font-mono text-xs" style="border-color: var(--border-subtle);"></tbody>
+          </table>
+        </div>
+
+        <div id="comparisonVisualBars" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+
+        <div class="flex justify-end pt-1">
+          <button id="btnCopyComparisonMarkdown" class="px-4 py-2 rounded-xl text-xs font-bold text-white transition flex items-center gap-2 shadow-sm hover:opacity-90" style="background: var(--accent-primary);">
+            <i class="fa-regular fa-copy"></i>
+            <span id="textCopyComparison">Copy Markdown Comparison Table</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODULAR JAVASCRIPT ARCHITECTURE (Ordered Dependency Loading)
+       ========================================================================= -->
+  <script src="js/config.js" defer></script>
+  <script src="js/engine.js" defer></script>
+  <script src="js/renderer.js" defer></script>
+  <script src="js/comparison.js" defer></script>
+  <script src="js/main.js" defer></script>
+</body>
+</html>
