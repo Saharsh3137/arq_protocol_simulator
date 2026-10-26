@@ -1,60 +1,149 @@
 /* =========================================================================
-   DUAL-THEME COLOR SYSTEM (CSS Variables + Canvas Sync)
-   1. Paper & Ink (Crisp Light Engineering Lab)
-   2. Obsidian & Amber (Warm Carbon Dark)
+   ARQ STUDIO — SOFT CANVAS DESIGN SYSTEM
+   Warm neutral foundation · Sage accent · Calming scientific visualization
+   Light-first architecture · Emil Kowalski interaction · Impeccable craft
    ========================================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+
+/* ── 1. LIGHT THEME (DEFAULT: SOFT CANVAS) ── */
 :root,
 html[data-theme="paper"] {
-  --bg-app: #f1f5f9;
-  --bg-panel: #ffffff;
-  --bg-subtle: #f8fafc;
-  --bg-canvas: #f8fafc;
-  --border-main: #cbd5e1;
-  --border-subtle: #e2e8f0;
-  --text-main: #0f172a;
-  --text-secondary: #334155;
-  --text-muted: #64748b;
-  --accent-primary: #4f46e5;
-  --accent-primary-soft: rgba(79, 70, 229, 0.12);
-  --sender-accent: #2563eb;
-  --sender-soft: rgba(37, 99, 235, 0.12);
-  --receiver-accent: #7c3aed;
-  --receiver-soft: rgba(124, 58, 237, 0.12);
-  --ack-accent: #0d9488;
-  --ack-soft: rgba(13, 148, 136, 0.14);
-  --warn-accent: #d97706;
-  --warn-soft: rgba(217, 119, 6, 0.14);
-  --danger-accent: #e11d48;
-  --danger-soft: rgba(225, 29, 72, 0.13);
+  /* Surfaces & Canvas */
+  --bg-app: #F5F6F2;
+  --bg-header: #FFFFFF;
+  --bg-toolbar: #EEF1ED;
+  --bg-panel: #FFFFFF;
+  --bg-panel-elevated: #FAFBF9;
+  --bg-subtle: #EEF1ED;
+  --bg-canvas: #FAFBF9;
+  --bg-input: #FFFFFF;
+
+  /* Borders */
+  --border-main: #E3E8E2;
+  --border-subtle: #ECEFEA;
+  --border-hover: rgba(91, 129, 120, 0.40);
+  --border-active: #5B8178;
+
+  /* Typography */
+  --text-main: #29332F;
+  --text-secondary: #737E77;
+  --text-muted: #8E9A93;
+  --text-dim: #A8B3AC;
+
+  /* Primary Accent: Muted Sage Teal */
+  --accent-primary: #5B8178;
+  --accent-primary-hover: #4B6D65;
+  --accent-primary-soft: rgba(91, 129, 120, 0.09);
+  --accent-primary-border: rgba(91, 129, 120, 0.25);
+  --accent-glow: 0 1px 3px rgba(91, 129, 120, 0.15);
+
+  /* Semantic Protocol Tokens */
+  --sender-accent: #5483B8;       /* Technical Blue */
+  --sender-soft: rgba(84, 131, 184, 0.08);
+  --sender-border: rgba(84, 131, 184, 0.25);
+  --sender-bg: rgba(84, 131, 184, 0.04);
+
+  --receiver-accent: #8B78B8;     /* Dusty Lavender */
+  --receiver-soft: rgba(139, 120, 184, 0.08);
+  --receiver-border: rgba(139, 120, 184, 0.25);
+  --receiver-bg: rgba(139, 120, 184, 0.04);
+
+  --ack-accent: #43866D;          /* Sage Green */
+  --ack-soft: rgba(67, 134, 109, 0.08);
+  --ack-border: rgba(67, 134, 109, 0.25);
+
+  --warn-accent: #C18A43;         /* Warm Ochre / Retransmission */
+  --warn-soft: rgba(193, 138, 67, 0.08);
+  --warn-border: rgba(193, 138, 67, 0.25);
+
+  --danger-accent: #C76B70;       /* Muted Coral / Terracotta Loss */
+  --danger-soft: rgba(199, 107, 112, 0.08);
+  --danger-border: rgba(199, 107, 112, 0.25);
+
+  /* Canvas Lane Tints */
+  --canvas-sender-lane: rgba(84, 131, 184, 0.04);
+  --canvas-receiver-lane: rgba(139, 120, 184, 0.04);
+  --canvas-midline: rgba(41, 51, 47, 0.10);
+
+  /* Modal Backdrop */
+  --modal-backdrop-bg: rgba(41, 51, 47, 0.40);
+
+  /* Easing */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
+/* ── 2. DARK THEME (OPTIONAL ALTERNATIVE: MUTED SLATE) ── */
 html[data-theme="obsidian"] {
-  --bg-app: #111317;
-  --bg-panel: #191c22;
-  --bg-subtle: #13161b;
-  --bg-canvas: #14171d;
-  --border-main: #2d323e;
-  --border-subtle: #232730;
-  --text-main: #f3f4f6;
-  --text-secondary: #d1d5db;
-  --text-muted: #9ca3af;
-  --accent-primary: #f59e0b;
-  --accent-primary-soft: rgba(245, 158, 11, 0.16);
-  --sender-accent: #38bdf8;
-  --sender-soft: rgba(56, 189, 248, 0.15);
-  --receiver-accent: #c084fc;
-  --receiver-soft: rgba(192, 132, 252, 0.15);
-  --ack-accent: #10b981;
-  --ack-soft: rgba(16, 185, 129, 0.16);
-  --warn-accent: #fbbf24;
-  --warn-soft: rgba(251, 191, 36, 0.16);
-  --danger-accent: #f43f5e;
-  --danger-soft: rgba(244, 63, 94, 0.18);
+  /* Surfaces & Canvas */
+  --bg-app: #1A211F;
+  --bg-header: #202826;
+  --bg-toolbar: #1E2523;
+  --bg-panel: #242D2B;
+  --bg-panel-elevated: #2A3432;
+  --bg-subtle: #1E2624;
+  --bg-canvas: #1A211F;
+  --bg-input: #1D2422;
+
+  /* Borders */
+  --border-main: #35423E;
+  --border-subtle: #293430;
+  --border-hover: rgba(118, 165, 154, 0.40);
+  --border-active: #76A59A;
+
+  /* Typography */
+  --text-main: #EDF2EF;
+  --text-secondary: #9CA8A3;
+  --text-muted: #7A8782;
+  --text-dim: #5D6864;
+
+  /* Primary Accent: Restrained Sage */
+  --accent-primary: #76A59A;
+  --accent-primary-hover: #8AB8AD;
+  --accent-primary-soft: rgba(118, 165, 154, 0.12);
+  --accent-primary-border: rgba(118, 165, 154, 0.28);
+  --accent-glow: 0 1px 3px rgba(0, 0, 0, 0.25);
+
+  /* Semantic Protocol Tokens */
+  --sender-accent: #70A0D6;
+  --sender-soft: rgba(112, 160, 214, 0.12);
+  --sender-border: rgba(112, 160, 214, 0.28);
+  --sender-bg: rgba(112, 160, 214, 0.06);
+
+  --receiver-accent: #A896D1;
+  --receiver-soft: rgba(168, 150, 209, 0.12);
+  --receiver-border: rgba(168, 150, 209, 0.28);
+  --receiver-bg: rgba(168, 150, 209, 0.06);
+
+  --ack-accent: #5CA88D;
+  --ack-soft: rgba(92, 168, 141, 0.12);
+  --ack-border: rgba(92, 168, 141, 0.28);
+
+  --warn-accent: #D9A45B;
+  --warn-soft: rgba(217, 164, 91, 0.12);
+  --warn-border: rgba(217, 164, 91, 0.28);
+
+  --danger-accent: #DB8287;
+  --danger-soft: rgba(219, 130, 135, 0.12);
+  --danger-border: rgba(219, 130, 135, 0.28);
+
+  /* Canvas Lane Tints */
+  --canvas-sender-lane: rgba(112, 160, 214, 0.05);
+  --canvas-receiver-lane: rgba(168, 150, 209, 0.05);
+  --canvas-midline: rgba(237, 242, 239, 0.12);
+
+  /* Modal Backdrop */
+  --modal-backdrop-bg: rgba(12, 16, 15, 0.65);
 }
 
+/* =========================================================================
+   BASE LAYOUT & UTILITIES
+   ========================================================================= */
 body {
   background-color: var(--bg-app);
   color: var(--text-main);
+  transition: background-color 180ms var(--ease-out), color 180ms var(--ease-out);
 }
 
 .theme-panel {
@@ -72,11 +161,28 @@ body {
   border-color: var(--border-main);
 }
 
+.theme-input {
+  background-color: var(--bg-input);
+  border-color: var(--border-main);
+  color: var(--text-main);
+}
+
 .theme-text-main { color: var(--text-main); }
 .theme-text-sec { color: var(--text-secondary); }
 .theme-text-muted { color: var(--text-muted); }
+.theme-text-dim { color: var(--text-dim); }
 
-/* Compact Custom Scrollbars */
+.border {
+  border-color: var(--border-main);
+}
+
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 1px;
+}
+
+/* Custom Scrollbars */
 ::-webkit-scrollbar {
   width: 5px;
   height: 5px;
@@ -88,25 +194,381 @@ body {
   background: var(--border-main);
   border-radius: 9999px;
 }
-
-@keyframes senderPulse {
-  0%, 100% { box-shadow: 0 0 0 0 var(--sender-soft); }
-  50% { box-shadow: 0 0 0 3px var(--sender-soft); }
-}
-.sender-window-slot {
-  border-color: var(--sender-accent) !important;
-  animation: senderPulse 2s infinite ease-in-out;
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
 
-@keyframes receiverPulse {
-  0%, 100% { box-shadow: 0 0 0 0 var(--receiver-soft); }
-  50% { box-shadow: 0 0 0 3px var(--receiver-soft); }
-}
-.receiver-window-slot {
-  border-color: var(--receiver-accent) !important;
-  animation: receiverPulse 2s infinite ease-in-out;
+/* =========================================================================
+   BUTTON SYSTEMS (Emil Kowalski Design Engineering: 100-160ms feedback)
+   ========================================================================= */
+.btn-primary {
+  background: var(--accent-primary);
+  color: #ffffff;
+  border: 1px solid transparent;
+  transition: background-color 140ms var(--ease-out), transform 120ms var(--ease-out), box-shadow 140ms var(--ease-out);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
+.btn-primary:hover {
+  background: var(--accent-primary-hover);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.btn-primary:active {
+  transform: scale(0.97);
+}
+
+.btn-secondary {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-main);
+  color: var(--text-main);
+  transition: background-color 140ms var(--ease-out), border-color 140ms var(--ease-out), transform 120ms var(--ease-out);
+}
+
+.btn-secondary:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-subtle);
+}
+
+.btn-secondary:active {
+  transform: scale(0.97);
+}
+
+/* Minimal tooltips */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%) translateY(3px);
+  background: var(--text-main);
+  color: var(--bg-panel);
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 3px 7px;
+  border-radius: 5px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms var(--ease-out), transform 120ms var(--ease-out);
+  z-index: 60;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+[data-tooltip]:hover::after,
+[data-tooltip]:focus-visible::after {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* =========================================================================
+   PROTOCOL SELECTOR PILL TABS
+   ========================================================================= */
+.protocol-pill-group {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3px;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-subtle);
+  padding: 3px;
+  border-radius: 9px;
+}
+
+.protocol-pill-btn {
+  padding: 5px 4px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  background: transparent;
+  transition: all 140ms var(--ease-out);
+}
+
+.protocol-pill-btn:hover {
+  color: var(--text-main);
+}
+
+.protocol-pill-btn.active {
+  background: var(--accent-primary) !important;
+  color: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* Viewport Tabs */
+.stage-tab-btn {
+  color: var(--text-secondary);
+  transition: all 140ms var(--ease-out);
+}
+
+.stage-tab-btn:hover {
+  color: var(--text-main);
+}
+
+.stage-tab-btn.active {
+  background: var(--accent-primary);
+  color: #ffffff;
+}
+
+/* =========================================================================
+   INPUT RANGES & SCRUBBERS
+   ========================================================================= */
 input[type="range"] {
-  accent-color: var(--accent-primary);
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border-main);
+  height: 4px;
+  border-radius: 9999px;
+  outline: none;
+  transition: background 140ms var(--ease-out);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  cursor: pointer;
+  border: 2px solid var(--bg-panel);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  transition: transform 120ms var(--ease-out);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent-primary);
+  cursor: pointer;
+  border: 2px solid var(--bg-panel);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+  transition: transform 120ms var(--ease-out);
+}
+
+input[type="range"]:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+
+input[type="range"]:active::-moz-range-thumb {
+  transform: scale(1.15);
+}
+
+/* =========================================================================
+   FRAME TILE SYSTEM (Clean, Light, Uniform $46px Height)
+   ========================================================================= */
+.tape-frame-card {
+  flex: 1 1 0px;
+  min-width: 44px;
+  max-width: 72px;
+  height: 46px;
+  padding: 4px 6px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-panel);
+  cursor: pointer;
+  transition: transform 120ms var(--ease-out), background-color 140ms var(--ease-out), border-color 140ms var(--ease-out), box-shadow 140ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tape-frame-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    border-color: var(--border-hover);
+  }
+}
+
+.tape-frame-card:active {
+  transform: scale(0.98);
+}
+
+/* Sender window membership: subtle top accent line */
+.sender-window-slot {
+  box-shadow: inset 0 2px 0 0 var(--sender-accent);
+}
+
+/* Receiver window membership: subtle top accent line */
+.receiver-window-slot {
+  box-shadow: inset 0 2px 0 0 var(--receiver-accent);
+}
+
+/* =========================================================================
+   TEST CASE PRESET CARDS (Compact, Clean, Restrained)
+   ========================================================================= */
+.tc-card {
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-panel);
+  border-radius: 8px;
+  padding: 6px 8px;
+  text-align: left;
+  transition: all 140ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tc-card:hover {
+    background: var(--bg-subtle);
+    border-color: var(--border-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  }
+}
+
+.tc-card:active {
+  transform: scale(0.98);
+}
+
+/* =========================================================================
+   TELEMETRY STAT CARDS (Compact metric grid)
+   ========================================================================= */
+.telemetry-stat-card {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-subtle);
+  border-radius: 9px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: border-color 140ms var(--ease-out);
+}
+
+.telemetry-stat-card:hover {
+  border-color: var(--border-hover);
+}
+
+/* Live pulse dot */
+@keyframes liveDotPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.9);
+  }
+}
+
+.live-dot-pulse {
+  animation: liveDotPulse 2.4s infinite var(--ease-in-out);
+}
+
+/* =========================================================================
+   TRANSMISSION LOG ROWS (Calm Activity Feed)
+   ========================================================================= */
+.log-row-stream {
+  transition: background-color 120ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .log-row-stream:hover {
+    filter: brightness(0.98);
+  }
+}
+
+/* Jump to latest floating button */
+.jump-to-latest-btn {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  background: var(--accent-primary);
+  color: #ffffff;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 120ms var(--ease-out);
+  z-index: 20;
+}
+
+.jump-to-latest-btn:hover {
+  background: var(--accent-primary-hover);
+  transform: translateY(-1px);
+}
+
+/* =========================================================================
+   MODAL DIALOG & BACKDROP
+   ========================================================================= */
+.modal-backdrop {
+  background: var(--modal-backdrop-bg);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: opacity 160ms var(--ease-out);
+}
+
+.modal-content-box {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-main);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: transform 160ms var(--ease-out), opacity 160ms var(--ease-out);
+}
+
+@starting-style {
+  .modal-content-box {
+    transform: scale(0.97);
+    opacity: 0;
+  }
+}
+
+/* Keyboard keys */
+.theme-kbd {
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-main);
+  color: var(--text-main);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+
+/* Floating Jump to Latest Button in Event Log */
+.jump-to-latest-btn {
+  position: absolute;
+  bottom: 10px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-main);
+  color: var(--text-main);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  z-index: 10;
+  transition: all 160ms var(--ease-out);
+}
+
+.jump-to-latest-btn:hover {
+  background: var(--bg-subtle);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  transform: translateY(-1px);
+}
+
+/* =========================================================================
+   ACCESSIBILITY & REDUCED MOTION
+   ========================================================================= */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

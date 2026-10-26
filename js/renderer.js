@@ -24,6 +24,9 @@ window.ARQ.syncFaultPillsUI = function () {
   const aContainer = document.getElementById('ackFaultPills');
   fContainer.innerHTML = '';
   aContainer.innerHTML = '';
+  const colsClass = appState.totalFrames <= 10 ? 'grid grid-cols-10 gap-1' : 'grid grid-cols-8 gap-1';
+  fContainer.className = colsClass;
+  aContainer.className = colsClass;
 
   for (let i = 0; i < appState.totalFrames; i++) {
     const fSelected = appState.lostFrames.includes(i);
@@ -69,8 +72,15 @@ window.ARQ.updateControlPanelUI = function () {
 
   document.querySelectorAll('.protocol-btn').forEach(btn => {
     const active = btn.getAttribute('data-protocol') === appState.protocol;
-    btn.style.background = active ? 'var(--accent-primary)' : 'transparent';
-    btn.style.color = active ? '#ffffff' : 'var(--text-secondary)';
+    if (active) {
+      btn.classList.add('active');
+      btn.style.background = 'var(--accent-primary)';
+      btn.style.color = '#ffffff';
+    } else {
+      btn.classList.remove('active');
+      btn.style.background = 'transparent';
+      btn.style.color = 'var(--text-secondary)';
+    }
   });
 
   const seqSpace = Math.pow(2, appState.seqBits);
@@ -110,7 +120,7 @@ window.ARQ.updateControlPanelUI = function () {
   const alertBox = document.getElementById('validationAlert');
   const alertIcon = document.getElementById('validationIcon');
   alertBox.style.background = validation.valid ? 'var(--ack-soft)' : 'var(--danger-soft)';
-  alertBox.style.borderColor = validation.valid ? 'var(--ack-accent)' : 'var(--danger-accent)';
+  alertBox.style.borderColor = validation.valid ? 'var(--ack-border)' : 'var(--danger-border)';
   alertBox.style.color = validation.valid ? 'var(--ack-accent)' : 'var(--danger-accent)';
   alertIcon.className = validation.valid
     ? 'fa-solid fa-circle-check mt-0.5 shrink-0'
@@ -143,6 +153,15 @@ window.ARQ.renderCurrentTickState = function () {
   document.getElementById('metricSimTime').textContent = intTick;
   document.getElementById('metricTotalSimTime').textContent = `/ ${sim.maxTick} ticks`;
 
+  // Real-time efficiency metric
+  const effBadge = document.getElementById('metricEfficiencyBadge');
+  if (effBadge) {
+    const eff = snap.metrics.attempts > 0
+      ? ((snap.metrics.delivered / snap.metrics.attempts) * 100).toFixed(1) + '%'
+      : '100%';
+    effBadge.textContent = 'η = ' + eff;
+  }
+
   // Render Compact Sender Tape
   const winEnd = Math.min(appState.totalFrames - 1, snap.senderBase + appState.ws - 1);
   document.getElementById('senderWindowText').innerHTML = snap.senderBase < appState.totalFrames
@@ -155,40 +174,59 @@ window.ARQ.renderCurrentTickState = function () {
   const timers = [];
   snap.senderFrames.forEach(f => {
     const inWin = f.index >= snap.senderBase && f.index <= winEnd && snap.senderBase < appState.totalFrames;
-    let bg = 'var(--bg-subtle)';
-    let border = 'var(--border-main)';
-    let statusLabel = 'Wait';
-    let statusColor = 'var(--text-muted)';
+    let bg = inWin ? 'var(--sender-bg)' : 'var(--bg-subtle)';
+    let border = inWin ? 'var(--sender-border)' : 'var(--border-subtle)';
+    let statusIconHtml = inWin
+      ? '<span class="text-[8px] font-mono font-semibold" style="color: var(--sender-accent);">READY</span>'
+      : '<i class="fa-regular fa-clock text-[8px] opacity-30"></i>';
+    let statusColor = inWin ? 'var(--sender-accent)' : 'var(--text-muted)';
+    let tooltipTitle = `Frame ${f.index} (Seq ${f.seq}): ${inWin ? 'In Window (Ready to send)' : 'Waiting in queue'}`;
 
     if (f.state === 'acked') {
       bg = 'var(--ack-soft)';
-      border = 'var(--ack-accent)';
-      statusLabel = 'ACKed';
+      border = 'var(--ack-border)';
+      statusIconHtml = '<i class="fa-solid fa-circle-check text-[10px]" style="color: var(--ack-accent);"></i>';
       statusColor = 'var(--ack-accent)';
+      tooltipTitle = `Frame ${f.index} (Seq ${f.seq}): Acknowledged`;
     } else if (f.state === 'timeout') {
       bg = 'var(--danger-soft)';
-      border = 'var(--danger-accent)';
-      statusLabel = 'Re-Tx';
+      border = 'var(--danger-border)';
+      statusIconHtml = '<div class="flex items-center gap-0.5 font-mono text-[8px] font-bold" style="color: var(--danger-accent);"><i class="fa-solid fa-rotate text-[7.5px]"></i><span>RTO</span></div>';
       statusColor = 'var(--danger-accent)';
+      tooltipTitle = `Frame ${f.index} (Seq ${f.seq}): Timeout! Retransmitting`;
     } else if (f.state === 'inflight') {
       bg = 'var(--warn-soft)';
-      border = 'var(--warn-accent)';
-      statusLabel = f.timerRemaining !== null ? `${f.timerRemaining}t` : 'Sent';
+      border = 'var(--warn-border)';
+      statusIconHtml = `<div class="flex items-center gap-0.5 font-mono text-[8.5px] font-bold" style="color: var(--warn-accent);"><i class="fa-solid fa-stopwatch text-[8px]"></i><span>${f.timerRemaining !== null ? f.timerRemaining + 't' : ''}</span></div>`;
       statusColor = 'var(--warn-accent)';
+      tooltipTitle = `Frame ${f.index} (Seq ${f.seq}): In Flight (${f.timerRemaining}t remaining)`;
       if (f.timerRemaining !== null) timers.push(`F${f.index}:${f.timerRemaining}t`);
     }
 
     const el = document.createElement('div');
-    el.className = `relative w-12 shrink-0 rounded-lg border px-1.5 py-1 flex flex-col items-center justify-between transition ${inWin ? 'sender-window-slot border-2' : ''}`;
+    el.className = `relative tape-frame-card rounded-lg border flex flex-col justify-between transition cursor-pointer select-none ${inWin ? 'sender-window-slot' : ''}`;
     el.style.background = bg;
     el.style.borderColor = border;
+    el.title = tooltipTitle;
+    el.setAttribute('role', 'button');
+    el.setAttribute('tabindex', '0');
+    el.setAttribute('aria-label', `Frame ${f.index}, Seq ${f.seq}`);
+    el.addEventListener('click', () => window.ARQ.inspectFrame(f.index, 'sender'));
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        window.ARQ.inspectFrame(f.index, 'sender');
+      }
+    });
     el.innerHTML = `
-      ${inWin && f.index === snap.senderBase ? `<span class="absolute -top-2 left-0.5 px-1 rounded text-[8px] font-mono font-extrabold text-white" style="background: var(--sender-accent);">BASE</span>` : ''}
-      <div class="flex items-center justify-between w-full text-[10px] font-mono font-extrabold">
-        <span>F${f.index}</span>
-        <span class="opacity-70 text-[9px]">S${f.seq}</span>
+      <div class="flex items-center justify-between w-full text-[9.5px] font-mono font-bold leading-none">
+        <div class="flex items-center gap-1">
+          <span>F${f.index}</span>
+          ${inWin && f.index === snap.senderBase ? '<span class="px-1 py-0.2 rounded text-[7px] font-mono font-black text-white" style="background: var(--sender-accent);">BASE</span>' : ''}
+        </div>
+        <span class="opacity-60 text-[8.5px]">S${f.seq}</span>
       </div>
-      <div class="text-[9px] font-mono font-bold mt-0.5" style="color: ${statusColor};">${statusLabel}</div>
+      <div class="flex items-center justify-center mt-1 h-3.5" style="color: ${statusColor};">${statusIconHtml}</div>
     `;
     senderTape.appendChild(el);
   });
@@ -208,37 +246,56 @@ window.ARQ.renderCurrentTickState = function () {
 
   snap.receiverFrames.forEach(r => {
     const inRcvWin = r.index >= snap.rcvBase && r.index <= rcvWinEnd && snap.rcvBase < appState.totalFrames;
-    let bg = 'var(--bg-subtle)';
-    let border = 'var(--border-main)';
-    let statusLabel = 'Exp';
-    let statusColor = 'var(--text-muted)';
+    let bg = inRcvWin ? 'var(--receiver-bg)' : 'var(--bg-subtle)';
+    let border = inRcvWin ? 'var(--receiver-border)' : 'var(--border-subtle)';
+    let statusIconHtml = inRcvWin
+      ? '<span class="text-[8px] font-mono font-semibold" style="color: var(--receiver-accent);">WANT</span>'
+      : '<i class="fa-regular fa-circle text-[7.5px] opacity-30"></i>';
+    let statusColor = inRcvWin ? 'var(--receiver-accent)' : 'var(--text-muted)';
+    let tooltipTitle = `Frame ${r.index} (Seq ${r.seq}): ${inRcvWin ? 'Expected in window' : 'Waiting'}`;
 
     if (r.state === 'delivered') {
       bg = 'var(--ack-soft)';
-      border = 'var(--ack-accent)';
-      statusLabel = 'Deliv';
+      border = 'var(--ack-border)';
+      statusIconHtml = '<i class="fa-solid fa-circle-check text-[10px]" style="color: var(--ack-accent);"></i>';
       statusColor = 'var(--ack-accent)';
+      tooltipTitle = `Frame ${r.index} (Seq ${r.seq}): Delivered to Upper Layer`;
     } else if (r.state === 'buffered') {
       bg = 'var(--receiver-soft)';
-      border = 'var(--receiver-accent)';
-      statusLabel = 'Buf';
+      border = 'var(--receiver-border)';
+      statusIconHtml = '<div class="flex items-center gap-0.5 font-mono text-[8px] font-bold" style="color: var(--receiver-accent);"><i class="fa-solid fa-box-archive text-[7.5px]"></i><span>BUF</span></div>';
       statusColor = 'var(--receiver-accent)';
+      tooltipTitle = `Frame ${r.index} (Seq ${r.seq}): Buffered in Receive Window`;
     } else if (r.discardCount > 0) {
-      statusLabel = `Disc×${r.discardCount}`;
+      statusIconHtml = `<div class="flex items-center gap-0.5 font-mono text-[8px] font-bold" style="color: var(--danger-accent);"><i class="fa-solid fa-ban text-[7.5px]"></i><span>×${r.discardCount}</span></div>`;
       statusColor = 'var(--danger-accent)';
+      tooltipTitle = `Frame ${r.index} (Seq ${r.seq}): Discarded out-of-order (${r.discardCount} times)`;
     }
 
     const el = document.createElement('div');
-    el.className = `relative w-12 shrink-0 rounded-lg border px-1.5 py-1 flex flex-col items-center justify-between transition ${inRcvWin ? 'receiver-window-slot border-2' : ''}`;
+    el.className = `relative tape-frame-card rounded-lg border flex flex-col justify-between transition cursor-pointer select-none ${inRcvWin ? 'receiver-window-slot' : ''}`;
     el.style.background = bg;
     el.style.borderColor = border;
+    el.title = tooltipTitle;
+    el.setAttribute('role', 'button');
+    el.setAttribute('tabindex', '0');
+    el.setAttribute('aria-label', `Frame ${r.index}, Seq ${r.seq}`);
+    el.addEventListener('click', () => window.ARQ.inspectFrame(r.index, 'receiver'));
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        window.ARQ.inspectFrame(r.index, 'receiver');
+      }
+    });
     el.innerHTML = `
-      ${inRcvWin && r.index === snap.rcvBase ? `<span class="absolute -top-2 left-0.5 px-1 rounded text-[8px] font-mono font-extrabold text-white" style="background: var(--receiver-accent);">NEXT</span>` : ''}
-      <div class="flex items-center justify-between w-full text-[10px] font-mono font-extrabold">
-        <span>F${r.index}</span>
-        <span class="opacity-70 text-[9px]">S${r.seq}</span>
+      <div class="flex items-center justify-between w-full text-[9.5px] font-mono font-bold leading-none">
+        <div class="flex items-center gap-1">
+          <span>F${r.index}</span>
+          ${inRcvWin && r.index === snap.rcvBase ? '<span class="px-1 py-0.2 rounded text-[7px] font-mono font-black text-white" style="background: var(--receiver-accent);">NEXT</span>' : ''}
+        </div>
+        <span class="opacity-60 text-[8.5px]">S${r.seq}</span>
       </div>
-      <div class="text-[9px] font-mono font-bold mt-0.5" style="color: ${statusColor};">${statusLabel}</div>
+      <div class="flex items-center justify-center mt-1 h-3.5" style="color: ${statusColor};">${statusIconHtml}</div>
     `;
     receiverTape.appendChild(el);
   });
@@ -250,6 +307,7 @@ window.ARQ.renderCurrentTickState = function () {
 
 /**
  * Dynamically Sized Channel Canvas Renderer
+ * — Technical dual-station propagation bus with directional vector packets
  */
 window.ARQ.drawChannelCanvas = function (floatTick) {
   const { appState, THEME_PALETTES, PROP_DELAY } = window.ARQ;
@@ -272,57 +330,141 @@ window.ARQ.drawChannelCanvas = function (floatTick) {
   const W = rect.width;
   const H = rect.height;
 
+  // Background
   ctx.fillStyle = pal.canvasBg;
   ctx.fillRect(0, 0, W, H);
 
-  const topY = 24;
-  const bottomY = H - 20;
+  const stationH = 26;
+  const topY = 40;
+  const bottomY = H - 40;
   const midY = (topY + bottomY) / 2;
 
-  // Center fault line
+  // 1. Top Station Band: TX Bus (Sender)
+  ctx.fillStyle = pal.senderLaneBg || 'transparent';
+  ctx.fillRect(0, 0, W, stationH);
   ctx.strokeStyle = pal.gridLine;
   ctx.lineWidth = 1;
-  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(0, stationH);
+  ctx.lineTo(W, stationH);
+  ctx.stroke();
+
+  // TX badge tag on far left
+  ctx.fillStyle = pal.dataFill;
+  ctx.strokeStyle = pal.dataStroke;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.roundRect(10, 6, 26, 15, 3);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.font = 'bold 8.5px "JetBrains Mono", monospace';
+  ctx.fillStyle = pal.senderLabel;
+  ctx.textAlign = 'center';
+  ctx.fillText('TX', 23, 17);
+
+  // 2. Bottom Station Band: RX Bus (Receiver)
+  ctx.fillStyle = pal.receiverLaneBg || 'transparent';
+  ctx.fillRect(0, H - stationH, W, stationH);
+  ctx.strokeStyle = pal.gridLine;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(0, H - stationH);
+  ctx.lineTo(W, H - stationH);
+  ctx.stroke();
+
+  // RX badge tag on far left
+  ctx.fillStyle = pal.bufColor ? 'rgba(167, 139, 250, 0.12)' : pal.ackFill;
+  ctx.strokeStyle = pal.receiverLabel;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.roundRect(10, H - 21, 26, 15, 3);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.font = 'bold 8.5px "JetBrains Mono", monospace';
+  ctx.fillStyle = pal.receiverLabel;
+  ctx.textAlign = 'center';
+  ctx.fillText('RX', 23, H - 10);
+
+  // 3. Central Channel Medium (Dashed Midline)
+  ctx.strokeStyle = pal.midLine || pal.gridLine;
+  ctx.lineWidth = 1;
+  ctx.setLineDash([5, 5]);
   ctx.beginPath();
   ctx.moveTo(16, midY);
   ctx.lineTo(W - 16, midY);
   ctx.stroke();
   ctx.setLineDash([]);
 
+  // Frame Column Guidelines and Port Dots
   const N = appState.totalFrames;
-  const leftPad = 38;
-  const rightPad = 38;
+  const leftPad = 52;
+  const rightPad = 32;
   const usableW = Math.max(120, W - leftPad - rightPad);
 
   for (let i = 0; i < N; i++) {
     const x = leftPad + (N === 1 ? usableW / 2 : (i / (N - 1)) * usableW);
+
+    // Column guideline
     ctx.strokeStyle = pal.laneLine;
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(x, topY);
-    ctx.lineTo(x, bottomY);
+    ctx.moveTo(x, stationH);
+    ctx.lineTo(x, H - stationH);
     ctx.stroke();
 
+    // Port nodes at station boundary
+    ctx.fillStyle = pal.senderLabel;
+    ctx.beginPath();
+    ctx.arc(x, stationH, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = pal.receiverLabel;
+    ctx.beginPath();
+    ctx.arc(x, H - stationH, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Frame column label in TX band
     ctx.fillStyle = pal.laneText;
-    ctx.font = '600 9.5px "JetBrains Mono", monospace';
+    ctx.font = '600 9px "JetBrains Mono", monospace';
     ctx.textAlign = 'center';
-    ctx.fillText(`F${i}`, x, topY - 7);
+    ctx.fillText(`F${i}`, x, 18);
   }
 
   const sim = appState.simulation;
-  if (!sim || !sim.allChannelPackets) {
+  if (!sim || !sim.allChannelPackets || sim.allChannelPackets.length === 0) {
+    // Idle state
+    ctx.fillStyle = pal.laneText;
+    ctx.font = '600 10.5px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('CHANNEL STANDBY — PROPAGATION MEDIUM IDLE', W / 2, midY - 6);
+    ctx.font = '500 9.5px "Plus Jakarta Sans", sans-serif';
+    ctx.globalAlpha = 0.65;
+    ctx.fillText('Press Play [Space] or Step [+1t] to transmit frames', W / 2, midY + 14);
+    ctx.globalAlpha = 1;
     ctx.restore();
     return;
   }
 
+  // Midline channel info
+  ctx.fillStyle = pal.laneText;
+  ctx.globalAlpha = 0.45;
+  ctx.font = '500 8.5px "JetBrains Mono", monospace';
+  ctx.textAlign = 'right';
+  ctx.fillText('RTT = 6t (PROP = 3t)', W - 16, midY - 6);
+  ctx.globalAlpha = 1;
+
+  // Render packets in channel
   sim.allChannelPackets.forEach(pkt => {
-    const endT = pkt.willDrop ? pkt.dropTick + 0.75 : pkt.arriveTick + 0.3;
+    const endT = pkt.willDrop ? pkt.dropTick + 0.8 : pkt.arriveTick + 0.35;
     if (floatTick < pkt.sendTick || floatTick > endT) return;
 
     const laneX = leftPad + (N === 1 ? usableW / 2 : (pkt.frameIdx / (N - 1)) * usableW);
 
     if (pkt.willDrop && floatTick >= pkt.dropTick) {
-      const fade = Math.max(0, 1 - (floatTick - pkt.dropTick) / 0.75);
+      const elapsed = floatTick - pkt.dropTick;
+      const fade = Math.max(0, 1 - elapsed / 0.8);
       const dropProg = (pkt.dropTick - pkt.sendTick) / PROP_DELAY;
       const y = pkt.type === 'DATA'
         ? topY + dropProg * (bottomY - topY)
@@ -330,19 +472,29 @@ window.ARQ.drawChannelCanvas = function (floatTick) {
 
       ctx.save();
       ctx.globalAlpha = fade;
+
+      // Drop shockwave ring
+      const ringRadius = 10 + elapsed * 14;
       ctx.strokeStyle = pal.lostColor;
-      ctx.lineWidth = 2.5;
+      ctx.lineWidth = 1.2;
       ctx.beginPath();
-      ctx.moveTo(laneX - 8, y - 8);
-      ctx.lineTo(laneX + 8, y + 8);
-      ctx.moveTo(laneX + 8, y - 8);
-      ctx.lineTo(laneX - 8, y + 8);
+      ctx.arc(laneX, y, ringRadius, 0, Math.PI * 2);
       ctx.stroke();
 
+      // Bold Cross
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      ctx.moveTo(laneX - 6, y - 6);
+      ctx.lineTo(laneX + 6, y + 6);
+      ctx.moveTo(laneX + 6, y - 6);
+      ctx.lineTo(laneX - 6, y + 6);
+      ctx.stroke();
+
+      // Loss label
       ctx.fillStyle = pal.lostColor;
-      ctx.font = 'bold 10px "JetBrains Mono", monospace';
+      ctx.font = 'bold 9px "JetBrains Mono", monospace';
       ctx.textAlign = 'center';
-      ctx.fillText(`${pkt.type} ${pkt.frameIdx} LOST`, laneX, y - 13);
+      ctx.fillText(`${pkt.type === 'DATA' ? 'F' : 'ACK '}${pkt.frameIdx} ✕ DROPPED`, laneX, y - 14);
       ctx.restore();
       return;
     }
@@ -353,25 +505,48 @@ window.ARQ.drawChannelCanvas = function (floatTick) {
       : bottomY - prog * (bottomY - topY);
 
     const isData = pkt.type === 'DATA';
-    const boxW = 56;
-    const boxH = 24;
+    const boxW = isData && pkt.isRetransmission ? 72 : 62;
+    const boxH = 23;
 
     ctx.save();
     ctx.fillStyle = isData ? (pkt.isRetransmission ? pal.retxFill : pal.dataFill) : pal.ackFill;
     ctx.strokeStyle = isData ? (pkt.isRetransmission ? pal.retxStroke : pal.dataStroke) : pal.ackStroke;
-    ctx.lineWidth = 1.8;
+    ctx.lineWidth = 1.5;
 
+    // Pill background
     ctx.beginPath();
-    ctx.roundRect(laneX - boxW / 2, y - boxH / 2, boxW, boxH, 6);
+    ctx.roundRect(laneX - boxW / 2, y - boxH / 2, boxW, boxH, 5);
     ctx.fill();
     ctx.stroke();
 
+    // Direction arrow:
+    // DATA moves DOWN (top to bottom): apex points DOWN (+Y)
+    // ACK moves UP (bottom to top): apex points UP (-Y)
+    const arrowX = laneX + boxW / 2 - 9;
+    const arrowY = y;
+    ctx.fillStyle = isData ? (pkt.isRetransmission ? pal.retxStroke : pal.dataStroke) : pal.ackStroke;
+    ctx.beginPath();
+    if (isData) {
+      // Point DOWN
+      ctx.moveTo(arrowX, arrowY + 4);
+      ctx.lineTo(arrowX + 3.5, arrowY - 3);
+      ctx.lineTo(arrowX - 3.5, arrowY - 3);
+    } else {
+      // Point UP
+      ctx.moveTo(arrowX, arrowY - 4);
+      ctx.lineTo(arrowX + 3.5, arrowY + 3);
+      ctx.lineTo(arrowX - 3.5, arrowY + 3);
+    }
+    ctx.closePath();
+    ctx.fill();
+
+    // Label text
     ctx.fillStyle = isData ? (pkt.isRetransmission ? pal.retxText : pal.dataText) : pal.ackText;
-    ctx.font = 'bold 9.5px "JetBrains Mono", monospace';
+    ctx.font = 'bold 9px "JetBrains Mono", monospace';
     ctx.textAlign = 'center';
     ctx.fillText(
       isData ? `${pkt.isRetransmission ? 'Re-' : ''}F${pkt.frameIdx}(S${pkt.seqNum})` : `ACK ${pkt.frameIdx}`,
-      laneX,
+      laneX - 5,
       y + 3
     );
     ctx.restore();
@@ -510,7 +685,62 @@ window.ARQ.renderLadderDiagram = function (floatTick = window.ARQ.appState.curre
 };
 
 /**
- * Maps each log entry to a high-contrast visual style
+ * Clickable Frame Inspector UX Enhancement
+ */
+window.ARQ.inspectFrame = function (frameIdx, side) {
+  const { appState } = window.ARQ;
+  const sim = appState.simulation;
+  const card = document.getElementById('frameInspectorCard');
+  if (!card || !sim) return;
+
+  const intTick = Math.min(sim.maxTick, Math.floor(appState.currentTick + 0.0001));
+  const snap = sim.snapshots[intTick] || sim.snapshots[0];
+  const seq = frameIdx % Math.pow(2, appState.seqBits);
+
+  const badge = document.getElementById('inspectBadge');
+  const detail = document.getElementById('inspectDetail');
+
+  badge.textContent = `F${frameIdx} (S${seq}) • ${side === 'sender' ? 'TX LANE' : 'RX LANE'}`;
+
+  let desc = '';
+  if (side === 'sender') {
+    const f = snap.senderFrames.find(x => x.index === frameIdx);
+    const winEnd = Math.min(appState.totalFrames - 1, snap.senderBase + appState.ws - 1);
+    const inWin = frameIdx >= snap.senderBase && frameIdx <= winEnd;
+    if (f.state === 'acked') {
+      desc = `Acknowledged. Transmission completed successfully.`;
+    } else if (f.state === 'timeout') {
+      desc = `Retransmission timeout expired! Pending retransmission.`;
+    } else if (f.state === 'inflight') {
+      desc = `In flight on channel (${f.timerRemaining ?? 0}t remaining on retransmission timer).`;
+    } else if (inWin) {
+      desc = `Inside sender window [F${snap.senderBase}..F${winEnd}]. Ready for transmission.`;
+    } else {
+      desc = `Queued outside window (Waiting for base F${snap.senderBase} to advance).`;
+    }
+  } else {
+    const r = snap.receiverFrames.find(x => x.index === frameIdx);
+    const rcvWinEnd = Math.min(appState.totalFrames - 1, snap.rcvBase + appState.wr - 1);
+    const inWin = frameIdx >= snap.rcvBase && frameIdx <= rcvWinEnd;
+    if (r.state === 'delivered') {
+      desc = `Delivered to upper protocol layer.`;
+    } else if (r.state === 'buffered') {
+      desc = `Buffered in receiver memory. Waiting for missing preceding frame F${snap.rcvBase}.`;
+    } else if (r.discardCount > 0) {
+      desc = `Discarded ${r.discardCount} time(s) due to out-of-order arrival without buffer space.`;
+    } else if (inWin) {
+      desc = `Inside receiver window [F${snap.rcvBase}..F${rcvWinEnd}]. Expected next sequence number.`;
+    } else {
+      desc = `Outside receiver window (Current receiver base is F${snap.rcvBase}).`;
+    }
+  }
+
+  detail.textContent = desc;
+  card.classList.remove('hidden');
+};
+
+/**
+ * Maps each log entry to a high-contrast visual style with Soft Canvas tokens
  */
 function getLogOperationStyle(level, text) {
   const isLight = window.ARQ.appState.theme === 'paper';
@@ -533,71 +763,81 @@ function getLogOperationStyle(level, text) {
   const styles = {
     send: {
       badge: 'TX',
-      border: '#38bdf8',
-      bg: isLight ? 'rgba(2, 132, 199, 0.09)' : 'rgba(56, 189, 248, 0.12)',
-      badgeBg: isLight ? 'rgba(2, 132, 199, 0.18)' : 'rgba(56, 189, 248, 0.24)',
-      text: isLight ? '#0369a1' : '#7dd3fc'
+      icon: 'fa-solid fa-arrow-up-right-from-square',
+      border: 'var(--data-accent)',
+      bg: isLight ? 'var(--sender-bg)' : 'rgba(84, 131, 184, 0.12)',
+      badgeBg: isLight ? 'var(--sender-soft)' : 'rgba(84, 131, 184, 0.24)',
+      text: isLight ? 'var(--text-main)' : '#8bb2de'
     },
     recv: {
       badge: 'RX',
-      border: '#10b981',
-      bg: isLight ? 'rgba(5, 150, 105, 0.09)' : 'rgba(16, 185, 129, 0.13)',
-      badgeBg: isLight ? 'rgba(5, 150, 105, 0.18)' : 'rgba(16, 185, 129, 0.25)',
-      text: isLight ? '#047857' : '#6ee7b7'
+      icon: 'fa-solid fa-arrow-down-left-and-up-right-to-center',
+      border: 'var(--ack-accent)',
+      bg: isLight ? 'var(--ack-soft)' : 'rgba(67, 134, 109, 0.13)',
+      badgeBg: isLight ? 'var(--ack-soft)' : 'rgba(67, 134, 109, 0.25)',
+      text: isLight ? 'var(--text-main)' : '#7cbfa5'
     },
     ack: {
       badge: 'ACK',
-      border: '#2dd4bf',
-      bg: isLight ? 'rgba(13, 148, 136, 0.09)' : 'rgba(45, 212, 191, 0.12)',
-      badgeBg: isLight ? 'rgba(13, 148, 136, 0.18)' : 'rgba(45, 212, 191, 0.24)',
-      text: isLight ? '#0f766e' : '#5eead4'
+      icon: 'fa-solid fa-check',
+      border: 'var(--ack-accent)',
+      bg: isLight ? 'var(--ack-soft)' : 'rgba(67, 134, 109, 0.12)',
+      badgeBg: isLight ? 'var(--ack-soft)' : 'rgba(67, 134, 109, 0.24)',
+      text: isLight ? 'var(--text-main)' : '#7cbfa5'
     },
     buffer: {
       badge: 'BUF',
-      border: '#c084fc',
-      bg: isLight ? 'rgba(124, 58, 237, 0.09)' : 'rgba(192, 132, 252, 0.14)',
-      badgeBg: isLight ? 'rgba(124, 58, 237, 0.18)' : 'rgba(192, 132, 252, 0.26)',
-      text: isLight ? '#6d28d9' : '#d8b4fe'
+      icon: 'fa-solid fa-box-archive',
+      border: 'var(--receiver-accent)',
+      bg: isLight ? 'var(--receiver-soft)' : 'rgba(139, 120, 184, 0.14)',
+      badgeBg: isLight ? 'var(--receiver-soft)' : 'rgba(139, 120, 184, 0.26)',
+      text: isLight ? 'var(--text-main)' : '#b5a5db'
     },
     loss: {
       badge: 'LOST',
-      border: '#f43f5e',
-      bg: isLight ? 'rgba(225, 29, 72, 0.10)' : 'rgba(244, 63, 94, 0.16)',
-      badgeBg: isLight ? 'rgba(225, 29, 72, 0.20)' : 'rgba(244, 63, 94, 0.30)',
-      text: isLight ? '#be123c' : '#fda4af'
+      icon: 'fa-solid fa-xmark',
+      border: 'var(--danger-accent)',
+      bg: isLight ? 'var(--danger-soft)' : 'rgba(199, 107, 112, 0.16)',
+      badgeBg: isLight ? 'var(--danger-soft)' : 'rgba(199, 107, 112, 0.30)',
+      text: isLight ? 'var(--text-main)' : '#e59da1'
     },
     timeout: {
       badge: 'RTO',
-      border: '#f59e0b',
-      bg: isLight ? 'rgba(217, 119, 6, 0.11)' : 'rgba(245, 158, 11, 0.16)',
-      badgeBg: isLight ? 'rgba(217, 119, 6, 0.22)' : 'rgba(245, 158, 11, 0.30)',
-      text: isLight ? '#b45309' : '#fde68a'
+      icon: 'fa-solid fa-clock-rotate-left',
+      border: 'var(--warn-accent)',
+      bg: isLight ? 'var(--warn-soft)' : 'rgba(193, 138, 67, 0.16)',
+      badgeBg: isLight ? 'var(--warn-soft)' : 'rgba(193, 138, 67, 0.30)',
+      text: isLight ? 'var(--text-main)' : '#dfb57e'
     },
     retransmit: {
       badge: 'RE-TX',
-      border: '#fb923c',
-      bg: isLight ? 'rgba(234, 88, 12, 0.10)' : 'rgba(251, 146, 60, 0.15)',
-      badgeBg: isLight ? 'rgba(234, 88, 12, 0.20)' : 'rgba(251, 146, 60, 0.28)',
-      text: isLight ? '#c2410c' : '#fed7aa'
+      icon: 'fa-solid fa-arrows-rotate',
+      border: 'var(--warn-accent)',
+      bg: isLight ? 'var(--warn-soft)' : 'rgba(193, 138, 67, 0.15)',
+      badgeBg: isLight ? 'var(--warn-soft)' : 'rgba(193, 138, 67, 0.28)',
+      text: isLight ? 'var(--text-main)' : '#dfb57e'
     },
     warn: {
       badge: 'DISC',
-      border: '#f472b6',
-      bg: isLight ? 'rgba(219, 39, 119, 0.09)' : 'rgba(244, 114, 182, 0.14)',
-      badgeBg: isLight ? 'rgba(219, 39, 119, 0.18)' : 'rgba(244, 114, 182, 0.26)',
-      text: isLight ? '#be185d' : '#fbcfe8'
+      icon: 'fa-solid fa-ban',
+      border: 'var(--danger-accent)',
+      bg: isLight ? 'var(--danger-soft)' : 'rgba(199, 107, 112, 0.14)',
+      badgeBg: isLight ? 'var(--danger-soft)' : 'rgba(199, 107, 112, 0.26)',
+      text: isLight ? 'var(--text-main)' : '#e59da1'
     },
     error: {
       badge: 'ERR',
-      border: '#ef4444',
-      bg: 'rgba(239, 68, 68, 0.18)',
-      badgeBg: 'rgba(239, 68, 68, 0.32)',
-      text: isLight ? '#b91c1c' : '#fca5a5'
+      icon: 'fa-solid fa-triangle-exclamation',
+      border: 'var(--danger-accent)',
+      bg: 'var(--danger-soft)',
+      badgeBg: 'var(--danger-soft)',
+      text: isLight ? 'var(--text-main)' : '#e59da1'
     },
     info: {
       badge: 'CFG',
-      border: 'var(--border-main)',
-      bg: 'var(--bg-subtle)',
+      icon: 'fa-solid fa-sliders',
+      border: 'var(--border-subtle)',
+      bg: 'var(--surface-soft)',
       badgeBg: 'var(--border-subtle)',
       text: 'var(--text-secondary)'
     }
@@ -627,7 +867,7 @@ window.ARQ.renderTransmissionLog = function () {
         const header = document.createElement('div');
         header.className = 'font-extrabold border-b pb-1 pt-1.5 text-[10.5px] uppercase tracking-wider flex items-center gap-1.5';
         header.style.color = 'var(--accent-primary)';
-        header.style.borderColor = 'var(--border-main)';
+        header.style.borderColor = 'var(--border-subtle)';
         header.innerHTML = `<i class="fa-solid fa-chevron-right text-[8px]"></i><span>${line}</span>`;
         container.appendChild(header);
         return;
@@ -640,7 +880,7 @@ window.ARQ.renderTransmissionLog = function () {
       row.style.borderLeft = `3px solid ${st.border}`;
       row.style.color = st.text;
       row.innerHTML = `
-        <span class="px-1.5 py-0.2 rounded text-[8.5px] font-extrabold shrink-0" style="background: ${st.badgeBg}; color: ${st.border};">${st.badge}</span>
+        <span class="px-1.5 py-0.2 rounded text-[8.5px] font-extrabold shrink-0 flex items-center gap-1" style="background: ${st.badgeBg}; color: ${st.border};"><i class="${st.icon} text-[7.5px]"></i><span>${st.badge}</span></span>
         <span class="font-medium break-words">${line}</span>
       `;
       container.appendChild(row);
@@ -649,7 +889,17 @@ window.ARQ.renderTransmissionLog = function () {
     const curT = Math.floor(appState.currentTick + 0.0001);
     const logs = sim.tickLogs.filter(l => l.tick <= curT);
     if (logs.length === 0) {
-      container.innerHTML = `<div class="theme-text-muted italic p-2 rounded border theme-subtle text-[10.5px]">Tick ${curT}: Press <strong>Play</strong> or <strong>+1 Tick</strong> to watch color-coded events appear live.</div>`;
+      container.innerHTML = `
+        <div class="theme-subtle border border-dashed rounded-xl p-4 text-center space-y-2 mt-4" style="border-color: var(--border-subtle);">
+          <div class="w-8 h-8 rounded-full mx-auto flex items-center justify-center border" style="background: var(--accent-primary-soft); color: var(--accent-primary); border-color: var(--accent-primary-border);">
+            <i class="fa-solid fa-play text-xs ml-0.5"></i>
+          </div>
+          <div class="text-[11.5px] font-bold theme-text-main">Ready for Transmission</div>
+          <p class="text-[10px] theme-text-muted leading-relaxed max-w-xs mx-auto">
+            Press <kbd class="px-1.5 py-0.5 rounded border theme-text-main font-mono" style="background: var(--surface-soft); border-color: var(--border-subtle);">Space</kbd> to run or <kbd class="px-1.5 py-0.5 rounded border theme-text-main font-mono" style="background: var(--surface-soft); border-color: var(--border-subtle);">&rarr;</kbd> to step +1 tick. Telemetry frames and timeouts will stream live.
+          </p>
+        </div>
+      `;
       return;
     }
     logs.forEach(item => {
@@ -666,11 +916,20 @@ window.ARQ.renderTransmissionLog = function () {
 
       row.innerHTML = `
         <span class="font-extrabold shrink-0 w-9 text-[10px]" style="color: ${st.border};">t=${item.tick}</span>
-        <span class="px-1.5 py-0.2 rounded text-[8.5px] font-extrabold shrink-0" style="background: ${st.badgeBg}; color: ${st.border};">${st.badge}</span>
+        <span class="px-1.5 py-0.2 rounded text-[8.5px] font-extrabold shrink-0 flex items-center gap-1" style="background: ${st.badgeBg}; color: ${st.border};"><i class="${st.icon} text-[7.5px]"></i><span>${st.badge}</span></span>
         <span class="font-semibold flex-1 break-words">${item.text}</span>
       `;
       container.appendChild(row);
     });
-    container.scrollTop = container.scrollHeight;
+
+    // Auto-scroll only if user has not scrolled up to inspect previous logs
+    const isUserScrolledUp = (container.scrollHeight - container.scrollTop - container.clientHeight) > 40;
+    const jumpBtn = document.getElementById('btnJumpToLatestLog');
+    if (!isUserScrolledUp) {
+      container.scrollTop = container.scrollHeight;
+      if (jumpBtn) jumpBtn.classList.add('hidden');
+    } else {
+      if (jumpBtn) jumpBtn.classList.remove('hidden');
+    }
   }
 };

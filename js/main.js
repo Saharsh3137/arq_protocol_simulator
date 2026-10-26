@@ -96,11 +96,11 @@ window.addEventListener('DOMContentLoaded', () => {
     copyTextToClipboard
   } = window.ARQ;
 
-  // Theme Switcher (Default to Obsidian)
+  // Theme Switcher (Default to Soft Canvas: paper)
   document.querySelectorAll('.theme-btn').forEach(btn => {
     btn.addEventListener('click', () => applyTheme(btn.getAttribute('data-set-theme')));
   });
-  applyTheme('obsidian');
+  applyTheme('paper');
 
   // Protocol Selection
   document.querySelectorAll('.protocol-btn').forEach(btn => {
@@ -228,18 +228,22 @@ window.addEventListener('DOMContentLoaded', () => {
     const chView = document.getElementById('viewChannelStage');
     const ldView = document.getElementById('viewLadderStage');
 
+    const subTitle = document.getElementById('stageSubHeaderTitle');
     if (appState.activeStageView === 'channel') {
       wrapper.className = 'flex-1 min-h-0 grid grid-cols-1 w-full h-full overflow-hidden';
       chView.classList.remove('hidden');
       ldView.classList.add('hidden');
+      if (subTitle) subTitle.innerHTML = '<span class="w-2 h-2 rounded-full bg-cyan-400 live-dot-pulse"></span> Live Channel &amp; Space-Time Propagation (RTT = 6t | RTO = 9t)';
     } else if (appState.activeStageView === 'ladder') {
       wrapper.className = 'flex-1 min-h-0 grid grid-cols-1 w-full h-full overflow-hidden';
       chView.classList.add('hidden');
       ldView.classList.remove('hidden');
+      if (subTitle) subTitle.innerHTML = '<span class="w-2 h-2 rounded-full bg-cyan-400 live-dot-pulse"></span> Space-Time Ladder Sequence Diagram';
     } else {
-      wrapper.className = 'flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 w-full h-full overflow-hidden';
+      wrapper.className = 'flex-1 min-h-0 grid grid-cols-2 w-full h-full overflow-hidden';
       chView.classList.remove('hidden');
       ldView.classList.remove('hidden');
+      if (subTitle) subTitle.innerHTML = '<span class="w-2 h-2 rounded-full bg-cyan-400 live-dot-pulse"></span> Synchronized Split View: Channel &amp; Ladder';
     }
 
     drawChannelCanvas(appState.currentTick);
@@ -264,18 +268,117 @@ window.addEventListener('DOMContentLoaded', () => {
     copyTextToClipboard(appState.simulation.assignmentLines.join('\n'), document.getElementById('copyLogText'), 'Copied!');
   });
 
+  // UX Enhancements: Frame Inspector & Log Navigation
+  const btnCloseInspector = document.getElementById('btnCloseInspector');
+  if (btnCloseInspector) {
+    btnCloseInspector.addEventListener('click', () => {
+      const card = document.getElementById('frameInspectorCard');
+      if (card) card.classList.add('hidden');
+    });
+  }
+
+  const btnJumpToLatestLog = document.getElementById('btnJumpToLatestLog');
+  const logContainer = document.getElementById('transmissionLogContainer');
+  if (btnJumpToLatestLog && logContainer) {
+    btnJumpToLatestLog.addEventListener('click', () => {
+      logContainer.scrollTop = logContainer.scrollHeight;
+      btnJumpToLatestLog.classList.add('hidden');
+    });
+    logContainer.addEventListener('scroll', () => {
+      const distFromBottom = logContainer.scrollHeight - logContainer.scrollTop - logContainer.clientHeight;
+      if (distFromBottom > 40) {
+        btnJumpToLatestLog.classList.remove('hidden');
+      } else {
+        btnJumpToLatestLog.classList.add('hidden');
+      }
+    });
+  }
+
+  // Modals Wiring
+  const openModal = (id) => {
+    const m = document.getElementById(id);
+    if (!m) return;
+    m.classList.remove('hidden');
+    m.classList.add('flex');
+  };
+  const closeModal = (id) => {
+    const m = document.getElementById(id);
+    if (!m) return;
+    m.classList.add('hidden');
+    m.classList.remove('flex');
+  };
+
+  const btnOpenShortcuts = document.getElementById('btnOpenShortcuts');
+  if (btnOpenShortcuts) btnOpenShortcuts.addEventListener('click', () => openModal('modalShortcuts'));
+
+  const btnOpenTheory = document.getElementById('btnOpenTheory');
+  if (btnOpenTheory) btnOpenTheory.addEventListener('click', () => openModal('modalTheory'));
+
   // Comparison Modal
   document.getElementById('btnRunComparison').addEventListener('click', openComparisonModal);
   document.querySelectorAll('[data-close-modal]').forEach(btn => {
     btn.addEventListener('click', () => {
-      const m = document.getElementById(btn.getAttribute('data-close-modal'));
-      m.classList.add('hidden');
-      m.classList.remove('flex');
+      closeModal(btn.getAttribute('data-close-modal'));
     });
+  });
+
+  // Close modals on backdrop click
+  ['modalComparison', 'modalTheory', 'modalShortcuts'].forEach(id => {
+    const m = document.getElementById(id);
+    if (m) {
+      m.addEventListener('click', (e) => {
+        if (e.target === m) closeModal(id);
+      });
+    }
   });
 
   document.getElementById('btnCopyComparisonMarkdown').addEventListener('click', () => {
     copyTextToClipboard(window._latestComparisonMarkdown || '', document.getElementById('textCopyComparison'), 'Copied!');
+  });
+
+  // Global Keyboard Shortcuts
+  window.addEventListener('keydown', (e) => {
+    // Ignore keystrokes when typing inside text inputs
+    if (e.target.tagName === 'INPUT' && e.target.type === 'text') return;
+
+    if (e.code === 'Space') {
+      e.preventDefault();
+      if (appState.isPlaying) pauseSimulation();
+      else startSimulation();
+    } else if (e.code === 'ArrowRight') {
+      e.preventDefault();
+      pauseSimulation();
+      if (!appState.simulation) return;
+      appState.currentTick = Math.min(appState.simulation.maxTick, Math.floor(appState.currentTick) + 1);
+      renderCurrentTickState();
+    } else if (e.code === 'ArrowLeft') {
+      e.preventDefault();
+      pauseSimulation();
+      appState.currentTick = Math.max(0, Math.ceil(appState.currentTick) - 1);
+      renderCurrentTickState();
+    } else if (e.key === 'r' || e.key === 'R') {
+      pauseSimulation();
+      appState.currentTick = 0;
+      renderCurrentTickState();
+    } else if (e.key === '1') {
+      appState.protocol = 'SW';
+      appState.ws = 1; appState.wr = 1;
+      recomputeAndRender(true);
+    } else if (e.key === '2') {
+      appState.protocol = 'GBN';
+      const maxGbn = Math.pow(2, appState.seqBits) - 1;
+      appState.ws = Math.min(4, maxGbn); appState.wr = 1;
+      recomputeAndRender(true);
+    } else if (e.key === '3') {
+      appState.protocol = 'SR';
+      const maxHalf = Math.max(1, Math.pow(2, appState.seqBits - 1));
+      appState.ws = Math.min(4, maxHalf); appState.wr = Math.min(4, maxHalf);
+      recomputeAndRender(true);
+    } else if (e.key === 'Escape') {
+      ['modalComparison', 'modalTheory', 'modalShortcuts'].forEach(closeModal);
+    } else if (e.key === '?') {
+      openModal('modalShortcuts');
+    }
   });
 
   // ResizeObserver ensures the Canvas dynamically fits the exact middle space

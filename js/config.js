@@ -7,49 +7,59 @@ window.ARQ = window.ARQ || {};
 window.ARQ.PROP_DELAY = 3;
 window.ARQ.TIMEOUT_TICKS = 9;
 
-// Theme Palettes for HTML5 Canvas & Dynamic Badges
+// Theme Palettes for HTML5 Canvas & Dynamic Badges (Soft Canvas & Muted Slate)
 window.ARQ.THEME_PALETTES = {
   paper: {
-    canvasBg: '#f8fafc',
-    pillBg: '#ffffff',
-    gridLine: '#cbd5e1',
-    laneLine: 'rgba(148, 163, 184, 0.35)',
-    laneText: '#64748b',
-    dataFill: '#eff6ff',
-    dataStroke: '#2563eb',
-    dataText: '#1e3a8a',
-    retxFill: '#fffbeb',
-    retxStroke: '#d97706',
-    retxText: '#92400e',
-    ackFill: '#f0fdfa',
-    ackStroke: '#0d9488',
-    ackText: '#115e59',
-    lostColor: '#e11d48',
-    bufColor: '#7c3aed'
+    canvasBg: '#FAFBF9',
+    pillBg: '#FFFFFF',
+    gridLine: 'rgba(41, 51, 47, 0.06)',
+    laneLine: 'rgba(41, 51, 47, 0.05)',
+    laneText: '#737E77',
+    senderLaneBg: 'rgba(84, 131, 184, 0.05)',
+    receiverLaneBg: 'rgba(139, 120, 184, 0.05)',
+    midLine: 'rgba(41, 51, 47, 0.10)',
+    senderLabel: '#5483B8',
+    receiverLabel: '#8B78B8',
+    dataFill: 'rgba(84, 131, 184, 0.09)',
+    dataStroke: '#5483B8',
+    dataText: '#243C5A',
+    retxFill: 'rgba(193, 138, 67, 0.10)',
+    retxStroke: '#C18A43',
+    retxText: '#5C3D12',
+    ackFill: 'rgba(67, 134, 109, 0.09)',
+    ackStroke: '#43866D',
+    ackText: '#1C4435',
+    lostColor: '#C76B70',
+    bufColor: '#8B78B8'
   },
   obsidian: {
-    canvasBg: '#14171d',
-    pillBg: '#191c22',
-    gridLine: '#2d323e',
-    laneLine: 'rgba(75, 85, 99, 0.35)',
-    laneText: '#9ca3af',
-    dataFill: '#0c2d48',
-    dataStroke: '#38bdf8',
-    dataText: '#e0f2fe',
-    retxFill: '#3b2106',
-    retxStroke: '#f59e0b',
-    retxText: '#fef3c7',
-    ackFill: '#063729',
-    ackStroke: '#10b981',
-    ackText: '#d1fae5',
-    lostColor: '#f43f5e',
-    bufColor: '#c084fc'
+    canvasBg: '#1A211F',
+    pillBg: '#242D2B',
+    gridLine: 'rgba(237, 242, 239, 0.06)',
+    laneLine: 'rgba(237, 242, 239, 0.05)',
+    laneText: '#9CA8A3',
+    senderLaneBg: 'rgba(112, 160, 214, 0.06)',
+    receiverLaneBg: 'rgba(168, 150, 209, 0.06)',
+    midLine: 'rgba(237, 242, 239, 0.12)',
+    senderLabel: '#70A0D6',
+    receiverLabel: '#A896D1',
+    dataFill: 'rgba(112, 160, 214, 0.14)',
+    dataStroke: '#70A0D6',
+    dataText: '#EDF2EF',
+    retxFill: 'rgba(217, 164, 91, 0.14)',
+    retxStroke: '#D9A45B',
+    retxText: '#FFF9EF',
+    ackFill: 'rgba(92, 168, 141, 0.14)',
+    ackStroke: '#5CA88D',
+    ackText: '#F2F9F5',
+    lostColor: '#DB8287',
+    bufColor: '#A896D1'
   }
 };
 
-// Application Reactive State
+// Application Reactive State (Soft Canvas Light Theme Default)
 window.ARQ.appState = {
-  theme: 'obsidian',
+  theme: 'paper',
   protocol: 'GBN',       // 'SW' | 'GBN' | 'SR'
   totalFrames: 10,       // N
   seqBits: 3,            // m
