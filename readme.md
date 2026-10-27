@@ -2,6 +2,8 @@
 
 An interactive discrete-event simulator for Data Link Layer (DLL) Automatic Repeat Request (ARQ) flow control protocols[cite: 1]. Built with vanilla JavaScript, HTML5 Canvas, SVG, and Tailwind CSS[cite: 1].
 
+[Report](https://docs.google.com/document/d/1aHD-2XA9pBsehNv_w4HuzZWLRJjOJMkVQsWreDqE-go/edit?tab=t.0)
+
 ## ✨ Features
 - **3 Core ARQ Protocols:** Stop-and-Wait (`SW`), Go-Back-N (`GBN`), and Selective Repeat (`SR`)[cite: 1].
 - **Real-Time Visualizations:**
