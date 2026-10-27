@@ -1,0 +1,451 @@
+- generic [ref=f3e1]:
+  - banner [ref=f3e2]:
+    - generic [ref=f3e3]:
+      - generic [ref=f3e4]: 
+      - heading "ARQ Studio" [level=1] [ref=f3e7]
+    - generic [ref=f3e9]:
+      - generic [ref=f3e10]:
+        - generic [ref=f3e11]: 
+        - generic [ref=f3e12]: Full-Duplex
+      - generic [ref=f3e13]: "|"
+      - generic [ref=f3e14]:
+        - generic [ref=f3e15]: 
+        - generic [ref=f3e16]: RTT = 6t
+      - generic [ref=f3e17]: "|"
+      - generic [ref=f3e18]:
+        - generic [ref=f3e19]: 
+        - generic [ref=f3e20]: RTO = 9t
+    - generic [ref=f3e21]:
+      - button "" [ref=f3e22] [cursor=pointer]
+      - button "" [ref=f3e24] [cursor=pointer]
+      - button " Compare" [ref=f3e26] [cursor=pointer]:
+        - generic [ref=f3e27]: 
+        - generic [ref=f3e28]: Compare
+      - generic [ref=f3e29]:
+        - button "" [ref=f3e30] [cursor=pointer]
+        - button "" [ref=f3e32] [cursor=pointer]
+  - generic [ref=f3e34]:
+    - generic [ref=f3e35]:
+      - button "" [ref=f3e36] [cursor=pointer]
+      - button "" [ref=f3e38] [cursor=pointer]
+      - button " Play" [ref=f3e40] [cursor=pointer]:
+        - generic [ref=f3e41]: 
+        - generic [ref=f3e42]: Play
+      - button " +1t" [active] [ref=f3e43] [cursor=pointer]:
+        - generic [ref=f3e44]: 
+        - generic [ref=f3e45]: +1t
+      - button "" [ref=f3e46] [cursor=pointer]
+      - generic [ref=f3e48]:
+        - generic [ref=f3e49]: 
+        - combobox [ref=f3e50]:
+          - option "0.5×"
+          - option "1.0×" [selected]
+          - option "2.0×"
+          - option "4.0×"
+    - generic [ref=f3e51]:
+      - generic [ref=f3e52]:
+        - generic [ref=f3e53]: t =
+        - generic [ref=f3e54]: "4"
+        - generic [ref=f3e55]: /35
+      - slider [ref=f3e56] [cursor=pointer]: "4"
+      - generic [ref=f3e57]: Frame 1 OK, ACK 1 sent
+    - generic [ref=f3e58]:
+      - button " Channel" [ref=f3e59] [cursor=pointer]:
+        - generic [ref=f3e60]: 
+        - generic [ref=f3e61]: Channel
+      - button " Split" [ref=f3e62] [cursor=pointer]:
+        - generic [ref=f3e63]: 
+        - generic [ref=f3e64]: Split
+      - button " Ladder" [ref=f3e65] [cursor=pointer]:
+        - generic [ref=f3e66]: 
+        - generic [ref=f3e67]: Ladder
+  - main [ref=f3e68]:
+    - complementary [ref=f3e69]:
+      - generic [ref=f3e70]:
+        - generic [ref=f3e71]:
+          - generic [ref=f3e72]:
+            - generic [ref=f3e73]: 
+            - text: Configuration
+          - generic [ref=f3e74]: Ws ≤ 2^m - 1 (7)
+        - generic [ref=f3e75]:
+          - button "SW" [ref=f3e76] [cursor=pointer]
+          - button "GBN" [ref=f3e77] [cursor=pointer]
+          - button "SR" [ref=f3e78] [cursor=pointer]
+        - generic [ref=f3e79]:
+          - generic [ref=f3e80]:
+            - generic [ref=f3e81]:
+              - generic [ref=f3e82]:
+                - generic [ref=f3e83]: 
+                - text: "N"
+              - generic [ref=f3e84]: "10"
+            - slider [ref=f3e85] [cursor=pointer]: "10"
+          - generic [ref=f3e86]:
+            - generic [ref=f3e87]:
+              - generic [ref=f3e88]:
+                - generic [ref=f3e89]: 
+                - text: m
+              - generic [ref=f3e90]: 3b (0..7)
+            - slider [ref=f3e91] [cursor=pointer]: "3"
+        - generic [ref=f3e92]:
+          - generic [ref=f3e93]:
+            - generic [ref=f3e94]:
+              - generic [ref=f3e95]: 
+              - generic [ref=f3e96]:
+                - generic [ref=f3e97]:
+                  - text: W
+                  - subscript [ref=f3e98]: s
+                - generic [ref=f3e99]: "max: 7"
+            - spinbutton [ref=f3e100]: "4"
+          - generic [ref=f3e101]:
+            - generic [ref=f3e102]:
+              - generic [ref=f3e103]: 
+              - generic [ref=f3e104]:
+                - generic [ref=f3e105]:
+                  - text: W
+                  - subscript [ref=f3e106]: r
+                - generic [ref=f3e107]: "locked: 1"
+            - spinbutton [disabled] [ref=f3e108]: "1"
+        - generic [ref=f3e109]:
+          - generic [ref=f3e110]: 
+          - generic [ref=f3e111]: "Valid GBN Config: Ws (4) ≤ 2^3-1 (7), Wr=1. No modulo-8 aliasing."
+      - generic [ref=f3e112]:
+        - generic [ref=f3e113]:
+          - generic [ref=f3e114]:
+            - generic [ref=f3e115]: 
+            - text: Fault Matrix
+          - button " Clear" [ref=f3e116] [cursor=pointer]:
+            - generic [ref=f3e117]: 
+            - generic [ref=f3e118]: Clear
+        - generic [ref=f3e119]:
+          - generic [ref=f3e120]:
+            - generic [ref=f3e121]:
+              - generic [ref=f3e122]: 
+              - text: "Frame Loss:"
+            - textbox "None" [ref=f3e123]: 3, 7
+          - generic [ref=f3e124]:
+            - button "F0" [ref=f3e125] [cursor=pointer]
+            - button "F1" [ref=f3e126] [cursor=pointer]
+            - button "F2" [ref=f3e127] [cursor=pointer]
+            - button "F3" [ref=f3e128] [cursor=pointer]
+            - button "F4" [ref=f3e129] [cursor=pointer]
+            - button "F5" [ref=f3e130] [cursor=pointer]
+            - button "F6" [ref=f3e131] [cursor=pointer]
+            - button "F7" [ref=f3e132] [cursor=pointer]
+            - button "F8" [ref=f3e133] [cursor=pointer]
+            - button "F9" [ref=f3e134] [cursor=pointer]
+        - generic [ref=f3e135]:
+          - generic [ref=f3e136]:
+            - generic [ref=f3e137]:
+              - generic [ref=f3e138]: 
+              - text: "ACK Loss:"
+            - textbox "None" [ref=f3e139]: "5"
+          - generic [ref=f3e140]:
+            - button "A0" [ref=f3e141] [cursor=pointer]
+            - button "A1" [ref=f3e142] [cursor=pointer]
+            - button "A2" [ref=f3e143] [cursor=pointer]
+            - button "A3" [ref=f3e144] [cursor=pointer]
+            - button "A4" [ref=f3e145] [cursor=pointer]
+            - button "A5" [ref=f3e146] [cursor=pointer]
+            - button "A6" [ref=f3e147] [cursor=pointer]
+            - button "A7" [ref=f3e148] [cursor=pointer]
+            - button "A8" [ref=f3e149] [cursor=pointer]
+            - button "A9" [ref=f3e150] [cursor=pointer]
+      - generic [ref=f3e151]:
+        - generic [ref=f3e152]:
+          - generic [ref=f3e153]:
+            - generic [ref=f3e154]: 
+            - text: Test Presets
+          - generic [ref=f3e155]: TC 1–7
+        - generic [ref=f3e156]:
+          - 'button "TC 1: Ideal  No loss" [ref=f3e157] [cursor=pointer]':
+            - generic [ref=f3e158]:
+              - generic [ref=f3e159]: "TC 1: Ideal"
+              - generic [ref=f3e160]: 
+            - generic [ref=f3e161]: No loss
+          - 'button "TC 2: Drop F3  Single loss" [ref=f3e162] [cursor=pointer]':
+            - generic [ref=f3e163]:
+              - generic [ref=f3e164]: "TC 2: Drop F3"
+              - generic [ref=f3e165]: 
+            - generic [ref=f3e166]: Single loss
+          - 'button "TC 3: Loss A2  ACK loss" [ref=f3e167] [cursor=pointer]':
+            - generic [ref=f3e168]:
+              - generic [ref=f3e169]: "TC 3: Loss A2"
+              - generic [ref=f3e170]: 
+            - generic [ref=f3e171]: ACK loss
+          - 'button "TC 4: Burst F2-F4 Burst drop" [ref=f3e172] [cursor=pointer]':
+            - generic [ref=f3e173]:
+              - generic [ref=f3e174]: "TC 4: Burst"
+              - generic [ref=f3e175]: F2-F4
+            - generic [ref=f3e176]: Burst drop
+          - 'button "TC 5: Wide Ws Ws=6 High pipe" [ref=f3e177] [cursor=pointer]':
+            - generic [ref=f3e178]:
+              - generic [ref=f3e179]: "TC 5: Wide Ws"
+              - generic [ref=f3e180]: Ws=6
+            - generic [ref=f3e181]: High pipe
+          - 'button "TC 6: Wrap m=2 Modulo wrap" [ref=f3e182] [cursor=pointer]':
+            - generic [ref=f3e183]:
+              - generic [ref=f3e184]: "TC 6: Wrap"
+              - generic [ref=f3e185]: m=2
+            - generic [ref=f3e186]: Modulo wrap
+          - 'button "TC 7: Invalid Overlap (SR Ws > 2m-1) Tests m=3, Ws=6 on SR (violates disjoint window rule) " [ref=f3e187] [cursor=pointer]':
+            - generic [ref=f3e188]:
+              - generic [ref=f3e189]:
+                - text: "TC 7: Invalid Overlap (SR Ws > 2"
+                - superscript [ref=f3e190]: m-1
+                - text: )
+              - generic [ref=f3e191]: Tests m=3, Ws=6 on SR (violates disjoint window rule)
+            - generic [ref=f3e192]: 
+    - generic [ref=f3e193]:
+      - generic [ref=f3e194]:
+        - generic [ref=f3e195]:
+          - generic [ref=f3e196]:
+            - generic [ref=f3e197]:
+              - generic [ref=f3e198]: 
+              - text: TX
+            - generic [ref=f3e199]:
+              - text: "Active:"
+              - strong [ref=f3e889]: "[F0..F3]"
+              - text: (base=0, next=4, W
+              - subscript [ref=f3e890]: s
+              - text: =4)
+          - generic [ref=f3e202]: "Timers: F0:5t F1:6t F2:7t F3:8t"
+        - generic [ref=f3e204]:
+          - 'generic "Frame 0 (Seq 0): In Flight (5t remaining)" [ref=f3e891]':
+            - generic [ref=f3e892]: BASE
+            - generic [ref=f3e893]:
+              - generic [ref=f3e894]: F0
+              - generic [ref=f3e895]: S0
+            - generic [ref=f3e897]:
+              - generic [ref=f3e898]: 
+              - generic [ref=f3e899]: 5t
+          - 'generic "Frame 1 (Seq 1): In Flight (6t remaining)" [ref=f3e900]':
+            - generic [ref=f3e901]:
+              - generic [ref=f3e902]: F1
+              - generic [ref=f3e903]: S1
+            - generic [ref=f3e905]:
+              - generic [ref=f3e906]: 
+              - generic [ref=f3e907]: 6t
+          - 'generic "Frame 2 (Seq 2): In Flight (7t remaining)" [ref=f3e908]':
+            - generic [ref=f3e909]:
+              - generic [ref=f3e910]: F2
+              - generic [ref=f3e911]: S2
+            - generic [ref=f3e913]:
+              - generic [ref=f3e914]: 
+              - generic [ref=f3e915]: 7t
+          - 'generic "Frame 3 (Seq 3): In Flight (8t remaining)" [ref=f3e916]':
+            - generic [ref=f3e917]:
+              - generic [ref=f3e918]: F3
+              - generic [ref=f3e919]: S3
+            - generic [ref=f3e921]:
+              - generic [ref=f3e922]: 
+              - generic [ref=f3e923]: 8t
+          - 'generic "Frame 4 (Seq 4): Waiting in queue" [ref=f3e924]':
+            - generic [ref=f3e925]:
+              - generic [ref=f3e926]: F4
+              - generic [ref=f3e927]: S4
+            - generic "Waiting in queue" [ref=f3e929]: 
+          - 'generic "Frame 5 (Seq 5): Waiting in queue" [ref=f3e930]':
+            - generic [ref=f3e931]:
+              - generic [ref=f3e932]: F5
+              - generic [ref=f3e933]: S5
+            - generic "Waiting in queue" [ref=f3e935]: 
+          - 'generic "Frame 6 (Seq 6): Waiting in queue" [ref=f3e936]':
+            - generic [ref=f3e937]:
+              - generic [ref=f3e938]: F6
+              - generic [ref=f3e939]: S6
+            - generic "Waiting in queue" [ref=f3e941]: 
+          - 'generic "Frame 7 (Seq 7): Waiting in queue" [ref=f3e942]':
+            - generic [ref=f3e943]:
+              - generic [ref=f3e944]: F7
+              - generic [ref=f3e945]: S7
+            - generic "Waiting in queue" [ref=f3e947]: 
+          - 'generic "Frame 8 (Seq 0): Waiting in queue" [ref=f3e948]':
+            - generic [ref=f3e949]:
+              - generic [ref=f3e950]: F8
+              - generic [ref=f3e951]: S0
+            - generic "Waiting in queue" [ref=f3e953]: 
+          - 'generic "Frame 9 (Seq 1): Waiting in queue" [ref=f3e954]':
+            - generic [ref=f3e955]:
+              - generic [ref=f3e956]: F9
+              - generic [ref=f3e957]: S1
+            - generic "Waiting in queue" [ref=f3e959]: 
+      - generic [ref=f3e269]:
+        - generic [ref=f3e270]: Live Channel & Space-Time Propagation (RTT = 6t | RTO = 9t)
+        - generic [ref=f3e272]:
+          - generic [ref=f3e273]: 
+          - generic [ref=f3e276]: 
+          - generic [ref=f3e279]: 
+          - generic [ref=f3e282]: 
+          - generic [ref=f3e285]: 
+      - generic [ref=f3e291]:
+        - generic [ref=f3e292]:
+          - generic [ref=f3e293]:
+            - generic [ref=f3e294]:
+              - generic [ref=f3e295]: 
+              - text: RX
+            - generic [ref=f3e296]:
+              - text: "Active:"
+              - strong [ref=f3e960]: "[F2..F2]"
+              - text: (R
+              - subscript [ref=f3e961]: next
+              - text: =2, W
+              - subscript [ref=f3e962]: r
+              - text: =1)
+          - generic [ref=f3e300]: "Out-of-order: Discarded (Cumul ACK)"
+        - generic [ref=f3e302]:
+          - 'generic "Frame 0 (Seq 0): Delivered to Upper Layer" [ref=f3e963]':
+            - generic [ref=f3e964]:
+              - generic [ref=f3e965]: F0
+              - generic [ref=f3e966]: S0
+            - generic "Delivered" [ref=f3e968]: 
+          - 'generic "Frame 1 (Seq 1): Delivered to Upper Layer" [ref=f3e969]':
+            - generic [ref=f3e970]:
+              - generic [ref=f3e971]: F1
+              - generic [ref=f3e972]: S1
+            - generic "Delivered" [ref=f3e974]: 
+          - 'generic "Frame 2 (Seq 2): Expected" [ref=f3e975]':
+            - generic [ref=f3e976]: NEXT
+            - generic [ref=f3e977]:
+              - generic [ref=f3e978]: F2
+              - generic [ref=f3e979]: S2
+            - generic "Expected frame" [ref=f3e981]: 
+          - 'generic "Frame 3 (Seq 3): Expected" [ref=f3e982]':
+            - generic [ref=f3e983]:
+              - generic [ref=f3e984]: F3
+              - generic [ref=f3e985]: S3
+            - generic "Expected frame" [ref=f3e987]: 
+          - 'generic "Frame 4 (Seq 4): Expected" [ref=f3e988]':
+            - generic [ref=f3e989]:
+              - generic [ref=f3e990]: F4
+              - generic [ref=f3e991]: S4
+            - generic "Expected frame" [ref=f3e993]: 
+          - 'generic "Frame 5 (Seq 5): Expected" [ref=f3e994]':
+            - generic [ref=f3e995]:
+              - generic [ref=f3e996]: F5
+              - generic [ref=f3e997]: S5
+            - generic "Expected frame" [ref=f3e999]: 
+          - 'generic "Frame 6 (Seq 6): Expected" [ref=f3e1000]':
+            - generic [ref=f3e1001]:
+              - generic [ref=f3e1002]: F6
+              - generic [ref=f3e1003]: S6
+            - generic "Expected frame" [ref=f3e1005]: 
+          - 'generic "Frame 7 (Seq 7): Expected" [ref=f3e1006]':
+            - generic [ref=f3e1007]:
+              - generic [ref=f3e1008]: F7
+              - generic [ref=f3e1009]: S7
+            - generic "Expected frame" [ref=f3e1011]: 
+          - 'generic "Frame 8 (Seq 0): Expected" [ref=f3e1012]':
+            - generic [ref=f3e1013]:
+              - generic [ref=f3e1014]: F8
+              - generic [ref=f3e1015]: S0
+            - generic "Expected frame" [ref=f3e1017]: 
+          - 'generic "Frame 9 (Seq 1): Expected" [ref=f3e1018]':
+            - generic [ref=f3e1019]:
+              - generic [ref=f3e1020]: F9
+              - generic [ref=f3e1021]: S1
+            - generic "Expected frame" [ref=f3e1023]: 
+    - complementary [ref=f3e364]:
+      - generic [ref=f3e365]:
+        - generic [ref=f3e366]:
+          - generic [ref=f3e367]:
+            - generic [ref=f3e368]: 
+            - heading "Event Bus" [level=2] [ref=f3e369]
+          - generic [ref=f3e370]:
+            - combobox [ref=f3e371]:
+              - option "Sync Live" [selected]
+              - option "Report"
+            - button "" [ref=f3e372] [cursor=pointer]
+        - generic [ref=f3e374]:
+          - generic [ref=f3e375]:
+            - generic [ref=f3e376]: 
+            - text: TX
+          - generic [ref=f3e377]: RX
+          - generic [ref=f3e378]:
+            - generic [ref=f3e379]: 
+            - text: ACK
+          - generic [ref=f3e380]:
+            - generic [ref=f3e381]: 
+            - text: BUF
+          - generic [ref=f3e382]:
+            - generic [ref=f3e383]: 
+            - text: RTO
+          - generic [ref=f3e384]:
+            - generic [ref=f3e385]: 
+            - text: LOST
+          - generic [ref=f3e386]:
+            - generic [ref=f3e387]: 
+            - text: DISC
+        - generic [ref=f3e388]:
+          - generic [ref=f3e1024]:
+            - generic [ref=f3e1025]: t=0
+            - generic [ref=f3e1026]:
+              - generic [ref=f3e1027]: 
+              - generic [ref=f3e1028]: TX
+            - generic [ref=f3e1029]: Sent Frame 0 (Seq 0)
+          - generic [ref=f3e1030]:
+            - generic [ref=f3e1031]: t=1
+            - generic [ref=f3e1032]:
+              - generic [ref=f3e1033]: 
+              - generic [ref=f3e1034]: TX
+            - generic [ref=f3e1035]: Sent Frame 1 (Seq 1)
+          - generic [ref=f3e1036]:
+            - generic [ref=f3e1037]: t=2
+            - generic [ref=f3e1038]:
+              - generic [ref=f3e1039]: 
+              - generic [ref=f3e1040]: TX
+            - generic [ref=f3e1041]: Sent Frame 2 (Seq 2)
+          - generic [ref=f3e1042]:
+            - generic [ref=f3e1043]: t=3
+            - generic [ref=f3e1044]: RX
+            - generic [ref=f3e1046]: Frame 0 delivered -> ACK 0 sent
+          - generic [ref=f3e1047]:
+            - generic [ref=f3e1048]: t=3
+            - generic [ref=f3e1049]:
+              - generic [ref=f3e1050]: 
+              - generic [ref=f3e1051]: TX
+            - generic [ref=f3e1052]: Sent Frame 3 (Seq 3)
+          - generic [ref=f3e1053]:
+            - generic [ref=f3e1054]: t=4
+            - generic [ref=f3e1055]: RX
+            - generic [ref=f3e1057]: Frame 1 delivered -> ACK 1 sent
+      - generic [ref=f3e395]:
+        - generic [ref=f3e396]:
+          - generic [ref=f3e397]:
+            - generic [ref=f3e398]: 
+            - text: Telemetry
+          - generic [ref=f3e399]: Live
+        - generic [ref=f3e400]:
+          - generic [ref=f3e401]:
+            - generic [ref=f3e402]:
+              - generic [ref=f3e403]: 
+              - text: Delivered
+            - generic [ref=f3e404]:
+              - strong [ref=f3e405]: "2"
+              - text: /10
+          - generic [ref=f3e406]:
+            - generic [ref=f3e407]:
+              - generic [ref=f3e408]: 
+              - text: Attempts
+            - strong [ref=f3e410]: "4"
+          - generic [ref=f3e411]:
+            - generic [ref=f3e412]:
+              - generic [ref=f3e413]: 
+              - text: Re-Tx
+            - strong [ref=f3e415]: "0"
+          - generic [ref=f3e416]:
+            - generic [ref=f3e417]:
+              - generic [ref=f3e418]: 
+              - text: Discarded
+            - strong [ref=f3e420]: "0"
+          - generic [ref=f3e421]:
+            - generic [ref=f3e422]:
+              - generic [ref=f3e423]:
+                - generic [ref=f3e424]: 
+                - text: Elapsed
+              - generic [ref=f3e425]: η = 50.0%
+            - generic [ref=f3e426]:
+              - generic [ref=f3e427]:
+                - strong [ref=f3e428]: "4"
+                - generic [ref=f3e429]: / 35 ticks
+              - generic [ref=f3e430]: 1t = 1 unit
+  - text:        
